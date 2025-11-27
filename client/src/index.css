@@ -2,10 +2,25 @@
 
 @import "tailwindcss";
 
-*{
+@theme{
+  --color-primary: #F84565;
+  --color-secondary: #8c7225;
+  --color-zinmyo-100: #B78628;
+  --color-zinmyo-200: #c69320;
+  --color-zinmyo-300: #DBA514;
+  --color-zinmyo-400: #EEB609;
+  --color-zinmyo-500: #FFC201;
+  --color-primary-dull: #D63854;
+}
+
+/* *{
   font-family: Outfit;
 }
 
 .font-playfair{
   font-family: Playfair !important;
+} */
+
+html,body{
+  font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
 }
