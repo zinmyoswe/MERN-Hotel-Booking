@@ -13,13 +13,13 @@
   --color-primary-dull: #D63854;
 }
 
-/* *{
+/* /* *{
   font-family: Outfit;
-}
+} */
 
 .font-playfair{
   font-family: Playfair !important;
-} */
+} 
 
 html,body{
   font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
