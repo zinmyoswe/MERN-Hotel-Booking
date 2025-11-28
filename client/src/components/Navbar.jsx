@@ -8,8 +8,8 @@ import { useClerk, useUser, UserButton  } from "@clerk/clerk-react";
 const Navbar = () => {
     const navLinks = [
         { name: 'Home', path: '/' },
-        { name: 'Products', path: '/' },
-        { name: 'Contact', path: '/' },
+        { name: 'Hotels', path: '/hotels' },
+        { name: 'Flights', path: '/flights' },
         { name: 'About', path: '/' },
     ];
 
@@ -50,20 +50,20 @@ const Navbar = () => {
                 {/* Logo */}
                 <Link to='/'>
                     <img src="https://cdn6.agoda.net/images/kite-js/logo/agoda/color-default.svg" alt="logo"
-                    className={`h-8 ${isScrolled && "invert opacity-80"}`} />
+                    className={`h-8 ${isScrolled && ""}`} />
                 </Link>
 
                 {/* Desktop Nav */}
                 <div className="hidden md:flex items-center gap-4 lg:gap-8">
                     {navLinks.map((link, i) => (
-                        <a key={i} href={link.path} className={`group flex flex-col gap-0.5 ${isScrolled ? "text-white" : "text-black"}`}>
+                        <a key={i} href={link.path} className={`group flex flex-col gap-0.5 ${isScrolled ? "text-gray-800" : "text-black"}`}>
                             {link.name}
                             <div className={`${isScrolled ? "bg-white" : "bg-black"} h-0.5 w-0 group-hover:w-full transition-all duration-300`} />
                         </a>
                     ))}
 
                     {user &&
-                        <button onClick={() => navigate('/owner')} className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? 'text-white' : 'text-black'} transition-all`}>
+                        <button onClick={() => navigate('/owner')} className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? 'text-gray-800' : 'text-black'} transition-all`}>
                         Dashboard
                     </button>
                     }   
@@ -78,7 +78,7 @@ const Navbar = () => {
             <button 
                 onClick={() => openSignIn()} 
                 className={`px-8 py-2.5 rounded-full ml-4 transition-all duration-500 cursor-pointer 
-                    ${isScrolled ? "text-white bg-black" : "bg-white text-primary"}`}
+                    ${isScrolled ? "bg-white text-indigo-500" : "bg-white text-primary"}`}
             >
                 Sign In
             </button>
@@ -88,7 +88,7 @@ const Navbar = () => {
                 onClick={() => openSignUp()} 
                 className={`border-2 border-gray-400 hover:bg-indigo-100 hover:border-primary 
                     px-8 py-4 text-sm font-light rounded-full cursor-pointer
-                    ${isScrolled ? 'text-white' : 'text-primary'} transition-all`}
+                    ${isScrolled ? 'text-indigo-500' : 'text-primary'} transition-all`}
             >
                 Create account
             </button>
