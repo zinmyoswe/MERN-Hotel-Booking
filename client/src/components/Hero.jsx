@@ -1,5 +1,7 @@
 import React from 'react'
 import { assets, cities } from '../assets/assets'
+import { UsersRound } from 'lucide-react'
+
 
 
 
@@ -51,7 +53,11 @@ const Hero = () => {
 
     {/* Guests Input */}
     <div className='md:w-1/6'>
-        <label htmlFor="guests" className='font-bold text-sm block mb-1'>Guests</label>
+    <div className='flex items-center gap-2 mb-1'>
+        <UsersRound className='w-6 text-gray-500'/>
+        
+        <label htmlFor="guests" className='font-bold text-sm'>Guests</label>
+        </div>
         <input min={1} max={10} id="guests" type="number" className="w-full rounded bg-gray-50 px-3 py-2 text-base outline-none focus:ring-2 focus:ring-indigo-400 transition duration-150 placeholder-gray-400" placeholder="1" />
     </div>
 

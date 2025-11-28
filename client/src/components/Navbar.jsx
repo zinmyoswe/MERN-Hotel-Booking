@@ -1,7 +1,9 @@
 
 import React from 'react'
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {assets} from '../assets/assets.js';
+import { BookCheck, LogIn, Search } from 'lucide-react';
+import { useClerk, useUser, UserButton  } from "@clerk/clerk-react";
 
 const Navbar = () => {
     const navLinks = [
@@ -15,6 +17,13 @@ const Navbar = () => {
 
     const [isScrolled, setIsScrolled] = React.useState(false);
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+
+    const {user} = useUser()
+    const {openSignIn} = useClerk()
+    const {openSignUp} = useClerk()
+    const { signOut } = useClerk();
+    const navigate = useNavigate()
+    const location = useLocation()
 
     React.useEffect(() => {
         const handleScroll = () => {
@@ -49,20 +58,66 @@ const Navbar = () => {
                 </div>
 
                 {/* Desktop Right */}
-                <div className="hidden md:flex items-center gap-4">
-                    <img src={assets.searchIcon} alt="search" className={`$
-                        {isScrolled && 'invert'} h-7 transition-all duration-500 bg-black`} />
-                    <button className={`px-8 py-2.5 rounded-full ml-4 transition-all duration-500 ${isScrolled ? "text-white bg-black" : "bg-white text-black"}`}>
-                        Login
-                    </button>
+<div className="hidden md:flex items-center gap-4">
+    { !user ? (
+        <>
+            {/* Sign In Button */}
+            <button 
+                onClick={() => openSignIn()} 
+                className={`px-8 py-2.5 rounded-full ml-4 transition-all duration-500 cursor-pointer 
+                    ${isScrolled ? "text-white bg-black" : "bg-white text-primary"}`}
+            >
+                Sign In
+            </button>
 
-                    <button className={`border  px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? 'text-white' : 'text-black'} transition-all`}>
-                        Create account
-                    </button>
-                </div>
+            {/* Create Account Button */}
+            <button 
+                onClick={() => openSignUp()} 
+                className={`border-2 border-gray-400 hover:bg-indigo-100 hover:border-primary 
+                    px-8 py-4 text-sm font-light rounded-full cursor-pointer
+                    ${isScrolled ? 'text-white' : 'text-primary'} transition-all`}
+            >
+                Create account
+            </button>
+        </>
+            ) : (
+                <UserButton>
+                    <UserButton.MenuItems>
+                        <UserButton.Action
+                            label="My Bookings"
+                            labelIcon={<BookCheck width={15} />}
+                            onClick={() => navigate('/my-bookings')}
+                        />
+                    </UserButton.MenuItems>
+                </UserButton>
+            )}
+        </div>
+
 
                 {/* Mobile Menu Button */}
-                <div className="flex items-center gap-3 md:hidden">
+                <div className="flex items-center gap-7 md:hidden">
+                     {/* MOBILE Auth Buttons */}
+                {!user ? (
+                    <>
+                        <button
+                            onClick={() => { setIsMenuOpen(false); openSignIn(); }}
+                            className=" text-gray-400 px-4 py-2 rounded-full">
+                            <LogIn />
+                        </button>
+
+                     
+                    </>
+                ) : (
+                    <UserButton>
+                    <UserButton.MenuItems>
+                        <UserButton.Action
+                            label="My Bookings"
+                            labelIcon={<BookCheck width={15} />}
+                            onClick={() => navigate('/my-bookings')}
+                        />
+                    </UserButton.MenuItems>
+                </UserButton>
+                )}
                     <svg onClick={() => setIsMenuOpen(!isMenuOpen)} className={`h-6 w-6 cursor-pointer ${isScrolled ? "invert" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <line x1="4" y1="6" x2="20" y2="6" />
                         <line x1="4" y1="12" x2="20" y2="12" />
@@ -86,9 +141,30 @@ const Navbar = () => {
                         Dashboard
                     </button>
 
-                    <button className="bg-black text-white px-8 py-2.5 rounded-full transition-all duration-500">
-                        Login
+                {!user ? (
+                    <>
+                        <button
+                            onClick={() => { setIsMenuOpen(false); openSignIn(); }}
+                            className=" text-gray-400 px-4 py-2 rounded-full">
+                           SignIn
+                        </button>
+
+                        <button
+                            onClick={() => { setIsMenuOpen(false); openSignUp(); }}
+                            className=" text-gray-400 px-4 py-2 rounded-full">
+                            Create Account
+                        </button>
+                    </>
+                ) : (
+                    <button
+                        onClick={() => { setIsMenuOpen(false); signOut(); }}
+                        className=" text-primary px-4 py-2 rounded-full"
+                    >
+                        Logout
                     </button>
+                )}
+
+                   
                 </div>
             </nav>
     );
