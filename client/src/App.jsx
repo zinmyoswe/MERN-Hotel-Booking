@@ -4,6 +4,7 @@ import { Route, Routes, useLocation } from 'react-router-dom'
 import Home from './pages/Home';
 import AllHotels from './pages/AllHotels';
 import AllFlights from './pages/AllFlights';
+import HotelDetails from './pages/HotelDetails';
 
 const App = () => {
 
@@ -16,6 +17,7 @@ const App = () => {
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/hotels' element={<AllHotels />} />
+          <Route path='/hotels/:id' element={<HotelDetails />} />
           <Route path='/flights' element={<AllFlights />} />
         </Routes>
       </div>

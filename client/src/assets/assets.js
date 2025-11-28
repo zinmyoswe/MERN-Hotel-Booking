@@ -37,6 +37,8 @@ import listIcon from "./listIcon.svg";
 import uploadArea from "./uploadArea.svg";
 import totalBookingIcon from "./totalBookingIcon.svg";
 import totalRevenueIcon from "./totalRevenueIcon.svg";
+import zcheckin from "./zin/zcheckin.png";
+import zcheckout from "./zin/zcheckout.png"
 
 
 export const assets = {
@@ -72,6 +74,8 @@ export const assets = {
     uploadArea,
     totalBookingIcon,
     totalRevenueIcon,
+    zcheckin,
+    zcheckout
 }
 
 export const cities = [
