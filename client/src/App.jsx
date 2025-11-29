@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import AllHotels from './pages/AllHotels';
 import AllFlights from './pages/AllFlights';
 import HotelDetails from './pages/HotelDetails';
+import MyBookings from './pages/MyBookings';
 
 const App = () => {
 
@@ -19,6 +20,7 @@ const App = () => {
           <Route path='/hotels' element={<AllHotels />} />
           <Route path='/hotels/:id' element={<HotelDetails />} />
           <Route path='/flights' element={<AllFlights />} />
+          <Route path='/my-bookings' element={<MyBookings />} />
         </Routes>
       </div>
       
