@@ -63,7 +63,10 @@ const Navbar = () => {
                     ))}
 
                     {user &&
-                        <button onClick={() => navigate('/owner')} className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? 'text-gray-800' : 'text-black'} transition-all`}>
+                        <button onClick={() => navigate('/owner')}
+                        className={`border-2 border-gray-400 hover:bg-indigo-100 hover:border-primary 
+                    px-8 py-4 text-sm font-light rounded-full cursor-pointer
+                    ${isScrolled ? 'text-indigo-500' : 'text-primary'} transition-all`}>
                         Dashboard
                     </button>
                     }   
