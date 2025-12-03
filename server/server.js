@@ -4,6 +4,7 @@ import 'dotenv/config';
 import connectDB from './configs/db.js';
 import { clerkMiddleware } from '@clerk/express'
 import clerkWebhooks from './controllers/clerkWebhooks.js';
+import userRouter from './routes/userRoutes.js';
 
 const app = express();
 const port = 3000;
@@ -19,5 +20,6 @@ app.use(clerkMiddleware())
 app.use("/api/clerk",clerkWebhooks);
 
 app.get('/', (req,res) => res.send('server is Live!'))
+app.use('/api/users', userRouter);
 
 app.listen(port, ()=> console.log(`Server listening at http://localhost:${port}`));
