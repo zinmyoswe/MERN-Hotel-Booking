@@ -93,7 +93,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 md:p-8 bg-white min-h-screen rounded-md shadow-md">
       <h1 className="text-4xl font-extrabold text-gray-900 mb-8">{t('Dashboard Overview')}</h1>
 
       {/* --- 1. Stats Cards Grid (Enhanced Design) --- */}
