@@ -8,6 +8,7 @@ import userRouter from './routes/userRoutes.js';
 import hotelRouter from './routes/hotelRoutes.js';
 import connectCloudinary from './configs/cloudinary.js';
 import roomRouter from './routes/roomRoutes.js';
+import bookingRouter from './routes/bookingRoutes.js';
 
 const app = express();
 const port = 3000;
@@ -27,5 +28,6 @@ app.get('/', (req,res) => res.send('server is Live!'))
 app.use('/api/users', userRouter);
 app.use('/api/hotels', hotelRouter);
 app.use('/api/rooms', roomRouter);
+app.use('/api/bookings', bookingRouter);
 
 app.listen(port, ()=> console.log(`Server listening at http://localhost:${port}`));
