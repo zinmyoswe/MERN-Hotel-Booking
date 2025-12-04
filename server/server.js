@@ -6,11 +6,14 @@ import { clerkMiddleware } from '@clerk/express'
 import clerkWebhooks from './controllers/clerkWebhooks.js';
 import userRouter from './routes/userRoutes.js';
 import hotelRouter from './routes/hotelRoutes.js';
+import connectCloudinary from './configs/cloudinary.js';
+import roomRouter from './routes/roomRoutes.js';
 
 const app = express();
 const port = 3000;
 
 await connectDB()
+connectCloudinary();
 
 //Middleware
 app.use(express.json())
@@ -23,5 +26,6 @@ app.use("/api/clerk",clerkWebhooks);
 app.get('/', (req,res) => res.send('server is Live!'))
 app.use('/api/users', userRouter);
 app.use('/api/hotels', hotelRouter);
+app.use('/api/rooms', roomRouter);
 
 app.listen(port, ()=> console.log(`Server listening at http://localhost:${port}`));
