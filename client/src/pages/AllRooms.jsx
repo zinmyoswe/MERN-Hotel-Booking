@@ -1,8 +1,6 @@
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { assets, facilityIcons, roomsDummyData } from '../assets/assets.js'
-import {  useSearchParams } from 'react-router-dom'
-import { useAppContext } from '@/context/AppContext.jsx'
-import { set } from 'zod'
+import { useNavigate } from 'react-router-dom'
 
 const CheckBox = ({label, selected = false, onChange = () => {}})=>{
     return(
@@ -23,25 +21,16 @@ const RadioButton = ({label, selected = false, onChange = () => {}})=>{
     )
 }
 
-const AllHotels = () => {
+const AllRooms = () => {
 
-    const [searchParams, setSearchParams] = useSearchParams();
-    const {rooms, navigate, currency} = useAppContext();
-    const [openFilters, setOpenFilters ] = useState(false);
-    const [selectedFilters, setSelectedFilters] = useState({
-        roomType: [],
-        priceRange: [],
-    });
-
-    const [selectedSort, setSelectedSort] = useState("");
+    const navigate = useNavigate();
+    const [openFilters, setOpenFilters ] = useState(false)
 
     const roomTypes = [
         "Single Bed",
         "Double Bed",
         "Luxury Room",
         "Family Suite",
-        "Deluxe Twin Room",
-        "Superior Double",
     ];
     const priceRanges = [
         '0 to 500',
@@ -56,78 +45,6 @@ const AllHotels = () => {
         "Newest First"
     ];
 
-    //Handle changes for filters and sorting
-    const handleFilterChange = (checked, value, type) => {
-        setSelectedFilters((prevFilters) => {
-            const updatedFilters = { ...prevFilters };
-            if (checked) {
-                updatedFilters[type].push(value);
-            }else{
-                updatedFilters[type] = updatedFilters[type].filter(item => item !== value);
-            }
-            return updatedFilters;
-        })
-    }
-
-    
-
-    const handleSortChange = (sortOption) => {
-        setSelectedSort(sortOption);
-    }
-
-    //Function to check if a room matches the selected room types
-    const matchesRoomType = (room) => {
-        return selectedFilters.roomType.length === 0 || selectedFilters.roomType.includes(room.roomType);
-    }
-
-    //Function to check if a room matches the selected price ranges
-    const matchesPriceRange = (room) => {
-        return selectedFilters.priceRange.length === 0 || selectedFilters.priceRange.some(range => {
-            const [min, max] = range.split(' to ').map(Number);
-            return room.pricePerNight >= min && room.pricePerNight <= max;
-        });
-    }
-
-    //function to sort rooms based on selected sort option
-    const sortRooms = (a,b) => {
-        if(selectedSort === "Price Low to High"){
-            return  a.pricePerNight - b.pricePerNight; 
-        }
-        if(selectedSort === "Price High to Low"){
-            return b.pricePerNight - a.pricePerNight;
-        }
-        if(selectedSort === "Newest First"){
-            return  new Date(b.createdAt) - new Date(a.createdAt);
-        }
-        return 0;
-    }
-
-    //Filter Destination
-    const filterDestination = (room) => {
-        const destination = searchParams.get('destination');
-        if(!destination) return true;
-        return room.hotel.city.toLowerCase() === destination.toLowerCase();
-    }
-
-    //Filter and sort rooms based on selected filters and sort option
-    const filteredRooms = useMemo(() => {
-        return rooms.filter(room => matchesRoomType(room) && matchesPriceRange(room) && filterDestination(room))
-        .sort(sortRooms);
-    }, [rooms, selectedFilters, selectedSort, searchParams]);
-
-    //Clear all filters
-    const clearFilters = () => {
-        setSelectedFilters({
-            roomType: [],
-            priceRange: [],
-        });
-        setSelectedSort("");
-        setSearchParams({});
-    }
-
-    
-    
-
   return (
     <div className='flex flex-col-reverse lg:flex-row items-start justify-between pt-28 md:pt-35 px-4 md:px-16 lg:px-24
     xl:px-32'>
@@ -137,30 +54,22 @@ const AllHotels = () => {
                 <p className='text-sm md:text-base text-gray-500/90 mt-2 max-w-174'>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Illo unde cupiditate harum placeat dolorum obcaecati quae, voluptatem minima quia neque quasi incidunt modi dolores sapiente maiores ratione ducimus corporis expedita!</p>
             </div>
 
-            {filteredRooms.map((room) => (
+            {roomsDummyData.map((room) => (
                 <div key={room._id} className='flex flex-col md:flex-row items-start py-10 gap-6 border-b border-gray-300
                 last:pb-30 last:border-0'>
                     <img 
                     onClick={() => {navigate(`/hotels/${room._id}`); scrollTo(0,0)}}
-                    src={room.images && (Array.isArray(room.images[0]) ? room.images[0][2] : room.images[0])}
-                    alt="hotel-img" title="View Room Details"
+                    src={room.images[0]} alt="hotel-img" title="View Room Details"
                     className='max-h-65 md:w-1/2 rounded-xl shadow-lg object-cover cursor-pointer' />
                     <div className='md:w-1/2 flex flex-col gap-2'>
-                        <p className='text-gray-500'>{room.hotel.city} , {room.hotel.country}</p>
+                        <p className='text-gray-500'>{room.hotel.city}</p>
                         <p 
                         onClick={() => {navigate(`/hotels/${room._id}`); scrollTo(0,0)}}
                         className='text-gray-800 text-3xl font-playfair cursor-pointer'>{room.hotel.name}</p>
                         <div className='flex items-center'>
-                            <p className=''>{room.roomType}</p>
-                        </div>
-                        
-                        <div className='flex items-center'>
                             {/* <StarRating /> */}
-                            <p className=''>200+ reviews</p>
-
-                            
+                            <p className='ml-2'>200+ reviews</p>
                         </div>
-                        
                         <div className='flex itmes-center'>
                             <img src={assets.locationIcon} alt="location-icon" />
                             <span>{room.hotel.address}</span>
@@ -207,30 +116,21 @@ const AllHotels = () => {
                 <div className='px-5 pt-5'>
                     <p className='font-medium text-gray-800 pb-2'>Popular filters</p>
                     {roomTypes.map((room, index) => (
-                        <CheckBox key={index} label={room} 
-                        selected={selectedFilters.roomType.includes(room)}
-                        onChange={(checked) => handleFilterChange(checked, room, 'roomType')}
-                        />
+                        <CheckBox key={index} label={room} />
                     ))}
                 </div>
 
                 <div className='px-5 pt-5'>
                     <p className='font-medium text-gray-800 pb-2'>Price Range</p>
                     {priceRanges.map((range, index) => (
-                        <CheckBox key={index} label={`$ ${range}`}
-                        selected={selectedFilters.priceRange.includes(range)}
-                        onChange={(checked) => handleFilterChange(checked, range, 'priceRange')}
-                        />
+                        <CheckBox key={index} label={`$ ${range}`} />
                     ))}
                 </div>
 
                 <div className='px-5 pt-5 pb-7'>
                     <p className='font-medium text-gray-800 pb-2'>Sort By</p>
                     {sortOptions.map((option, index) => (
-                        <RadioButton key={index} label={option} 
-                        selected={selectedSort === option}
-                        onChange={() => handleSortChange(option)}
-                        />
+                        <RadioButton key={index} label={option} />
                     ))}
                 </div>
                 
@@ -240,4 +140,4 @@ const AllHotels = () => {
   )
 }
 
-export default AllHotels
+export default AllRooms
