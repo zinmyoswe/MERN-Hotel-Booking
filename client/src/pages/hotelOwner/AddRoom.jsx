@@ -1,10 +1,8 @@
-import React from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -12,83 +10,269 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-
-const formSchema = z.object({
-  title: z.string().min(3, 'Room title must be at least 3 characters'),
-  hotel: z.string().min(1, 'Please select a hotel'),
-  price: z.coerce.number().min(1, 'Price must be at least 1'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  image: z.any(),
-});
+import { useAppContext } from '@/context/AppContext';
 
 const AddRoom = () => {
-  const { t } = useTranslation();
-  const { register, handleSubmit, control, formState: { errors } } = useForm({
-    resolver: zodResolver(formSchema),
+  const { axios, getToken } = useAppContext();
+
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const roomViewOptions = [
+    'City View', 'Sea View', 'Ocean View', 'River View', 'Lake View',
+    'Mountain View', 'Garden View', 'Pool View', 'Landmark View',
+    'Partial Sea/City View',
+  ];
+
+  const roomTypeOptions = [
+    'Single Room', 'Double Room', 'Twin Room', 'Triple Room', 'Quad Room',
+    'Deluxe Room', 'Deluxe Twin Room', 'Grand Deluxe Room', 'Superior Room',
+    'Executive Room', 'Premier Room', 'Family Room', 'Connecting Rooms',
+    'Dormitory Room (Hostel / shared)',
+  ];
+
+  const bedOptions = [
+    'Single Bed', 'Double Bed', 'Queen Bed', 'King Bed', 'Twin Beds',
+    'Bunk Bed', 'Sofa Bed', 'Extra Bed',
+  ];
+
+  const [inputs, setInputs] = useState({
+    roomType: '',
+    pricePerNight: '',
+    isAvailable: true,
+    RoomView: '',
+    Adults: '',
+    Bed: '',
+    SquareFeet: '',
+    amenities: {
+      'Free Wi-Fi': false,
+      'Free Breakfast': false,
+      'Room Service': false,
+      'Swimming Pool': false,
+      'Fitness Center': false,
+      'Air Conditioning': false,
+      'Parking': false,
+      'Pet Friendly': false,
+    },
   });
 
-  const onSubmit = (data) => {
-    console.log(data);
-    toast.success('Room added successfully!');
+  const onInputChangeHandler = (e) => {
+    const { name, value } = e.target;
+    setInputs({ ...inputs, [name]: value });
+  };
+  
+  const onSelectChangeHandler = (name, value) => {
+    setInputs({ ...inputs, [name]: value });
+  };
+
+  const onAmenityChangeHandler = (amenity) => {
+    setInputs((prev) => ({
+      ...prev,
+      amenities: {
+        ...prev.amenities,
+        [amenity]: !prev.amenities[amenity],
+      },
+    }));
+  };
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setImages(files);
+
+    const previews = files.map(file => URL.createObjectURL(file));
+    setImagePreviews(previews);
+  }
+
+  useEffect(() => {
+    // Cleanup object URLs on component unmount
+    return () => {
+      imagePreviews.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [imagePreviews]);
+
+  const onSubmitHandler = async (e) => {
+    e.preventDefault();
+    if (
+      !inputs.roomType ||
+      !inputs.pricePerNight ||
+      !inputs.RoomView ||
+      !inputs.Adults ||
+      !inputs.Bed ||
+      !inputs.SquareFeet ||
+      images.length === 0
+    ) {
+      toast.error('Please fill all the fields');
+      return;
+    }
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('roomType', inputs.roomType);
+      formData.append('pricePerNight', inputs.pricePerNight);
+      formData.append('isAvailable', inputs.isAvailable);
+      formData.append('RoomView', inputs.RoomView);
+      formData.append('Adults', inputs.Adults);
+      formData.append('Bed', inputs.Bed);
+      formData.append('SquareFeet', inputs.SquareFeet);
+
+      const amenities = Object.keys(inputs.amenities).filter(
+        (key) => inputs.amenities[key]
+      );
+      formData.append('amenities', JSON.stringify(amenities));
+
+      images.forEach((image) => {
+        formData.append('images', image);
+      });
+
+      const { data } = await axios.post('/api/rooms', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${await getToken()}`,
+        },
+      });
+      if (data.success) {
+        toast.success(data.message);
+        setInputs({
+          roomType: '',
+          pricePerNight: '',
+          isAvailable: true,
+          RoomView: '',
+          Adults: '',
+          Bed: '',
+          SquareFeet: '',
+          amenities: {
+            'Free Wi-Fi': false,
+            'Free Breakfast': false,
+            'Room Service': false,
+            'Swimming Pool': false,
+            'Fitness Center': false,
+            'Air Conditioning': false,
+            'Parking': false,
+            'Pet Friendly': false,
+          },
+        });
+        setImages([]);
+        setImagePreviews([]);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">{t('addRoom')}</h2>
+      <h2 className="text-2xl font-bold mb-4">Add Room</h2>
       <div className="bg-white p-6 rounded-md shadow-md">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={onSubmitHandler}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="title">Room Title</Label>
-              <Input id="title" placeholder="e.g. Deluxe Room" {...register('title')} />
-              {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
+              <Label htmlFor="roomType">Room Type</Label>
+              <Select onValueChange={(value) => onSelectChangeHandler('roomType', value)} value={inputs.roomType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Room Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roomTypeOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="hotel">Hotel</Label>
-              <Controller
-                name="hotel"
-                control={control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <SelectTrigger id="hotel">
-                      <SelectValue placeholder="Select a hotel" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="grand-hyatt">Grand Hyatt</SelectItem>
-                      <SelectItem value="hilton-garden-inn">Hilton Garden Inn</SelectItem>
-                      <SelectItem value="marriott-marquis">Marriott Marquis</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
+              <Label htmlFor="pricePerNight">Price per night</Label>
+              <Input
+                id="pricePerNight"
+                name="pricePerNight"
+                type="number"
+                placeholder="eg.100"
+                value={inputs.pricePerNight}
+                onChange={onInputChangeHandler}
               />
-              {errors.hotel && <p className="text-red-500 text-sm">{errors.hotel.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price">Price per night</Label>
-              <Input id="price" type="number" placeholder="e.g. 100" {...register('price')} />
-              {errors.price && <p className="text-red-500 text-sm">{errors.price.message}</p>}
+              <Label htmlFor="RoomView">Room View</Label>
+              <Select onValueChange={(value) => onSelectChangeHandler('RoomView', value)} value={inputs.RoomView}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Room View" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roomViewOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="Adults">Adults</Label>
+              <Input
+                id="Adults"
+                name="Adults"
+                type="number"
+                placeholder="e.g. 2"
+                value={inputs.Adults}
+                onChange={onInputChangeHandler}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="Bed">Bed</Label>
+              <Select onValueChange={(value) => onSelectChangeHandler('Bed', value)} value={inputs.Bed}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Bed Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {bedOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="SquareFeet">Square Feet</Label>
+              <Input
+                id="SquareFeet"
+                name="SquareFeet"
+                type="number"
+                placeholder="e.g. 300"
+                value={inputs.SquareFeet}
+                onChange={onInputChangeHandler}
+              />
             </div>
             <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <textarea
-                id="description"
-                rows="4"
-                className="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                placeholder="e.g. A spacious room with a king-sized bed."
-                {...register('description')}
-              ></textarea>
-              {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
+              <Label>Amenities</Label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {Object.keys(inputs.amenities).map((amenity) => (
+                  <div key={amenity} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={amenity}
+                      checked={inputs.amenities[amenity]}
+                      onCheckedChange={() => onAmenityChangeHandler(amenity)}
+                    />
+                    <Label htmlFor={amenity}>{amenity}</Label>
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="image">Room Image</Label>
-              <Input id="image" type="file" {...register('image')} />
-              {errors.image && <p className="text-red-500 text-sm">{errors.image.message}</p>}
+              <Label htmlFor="images">Room Images</Label>
+              <div className='grid grid-cols-1 gap-4'>
+                <Input
+                    type="file"
+                    multiple
+                    onChange={handleImageChange}
+                    className="col-span-4"
+                />
+                <div className="grid grid-cols-4 gap-4 mt-4">
+                  {imagePreviews.map((preview, index) => (
+                    <img key={index} src={preview} alt={`preview ${index}`} className="w-full h-auto rounded-md" />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
           <div className="mt-6">
-            <Button type="submit">{t('addRoom')}</Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Adding...' : 'Add Room'}
+            </Button>
           </div>
         </form>
       </div>

@@ -22,7 +22,7 @@ const App = () => {
 
   return (
     <div>
-      <Toaster />
+      <Toaster position="top-center" />
       {!isOwnerPath && <Navbar />}
       {showHotelRegister && <HotelRegister />}
 
