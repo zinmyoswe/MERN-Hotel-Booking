@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Hotel, Wallet, BookOpen, Star, TrendingUp } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line 
 } from 'recharts';
+import { useAppContext } from '@/context/AppContext';
+import { set } from 'zod';
 // The import for 'react-i18next' has been removed to resolve the build error.
 
 // --- Dummy Data Definitions ---
@@ -56,6 +58,40 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 // --- Main Component ---
 const Dashboard = () => {
+
+   const { currency, user, getToken, toast, axios } = useAppContext();
+
+   const [dashboardData, setDashboardData] = useState({
+      bookings: [],
+      totalBookings: 0,
+      totalRevenue: 0,
+   })
+
+   const fetchDashboardData = async () => {
+    try {
+      const {data} = await axios.get('/api/bookings/hotel', {
+        headers: {
+          Authorization: `Bearer ${await getToken()}`,
+        },
+      });
+      if(data.success){ 
+        setDashboardData(data.dashboardData);
+      }else{
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+   }
+
+   useEffect(() => {
+    if(user){
+      fetchDashboardData();
+    }
+   }, [user])
+
+
+
   // Mock translation function to resolve the build error caused by react-i18next dependency
   const t = (key) => {
       const translations = {

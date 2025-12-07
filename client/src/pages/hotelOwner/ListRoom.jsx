@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Table,
   TableHeader,
@@ -11,34 +11,65 @@ import { Button } from '@/components/ui/button';
 import { Plus, Trash, FileEdit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { useAppContext } from '@/context/AppContext';
+import toast from 'react-hot-toast';
+import { Switch } from '@/components/ui/switch';
 
-const rooms = [
-  {
-    title: 'Deluxe Room',
-    hotel: 'Grand Hyatt',
-    price: 200,
-  },
-  {
-    title: 'Single Room',
-    hotel: 'Hilton Garden Inn',
-    price: 150,
-  },
-  {
-    title: 'Suite',
-    hotel: 'Marriott Marquis',
-    price: 300,
-  },
-];
 
 const ListRoom = () => {
   const { t } = useTranslation();
+
+  const [rooms, setRooms] = useState([])
+  const {axios, getToken, user} = useAppContext();
+
+  //Fetch rooms of the Hotel Owner
+  const fetchRooms = async () => {
+    try {
+      const { data } = await axios.get('/api/rooms/owner', {
+        headers: {
+          Authorization: `Bearer ${await getToken()}`,
+        },
+      });
+      if(data.success){
+         setRooms(data.rooms);
+      }
+      else{
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  }
+
+  //Toggle Avaialability of Room
+  const toggleAvailability = async (roomId) => {
+    const {data} = await axios.post('/api/rooms/toggle-availability', {roomId}, {
+      headers: {
+        Authorization: `Bearer ${await getToken()}`,
+      },
+    });
+    if(data.success){
+      toast.success(data.message);
+      fetchRooms();
+    }
+    else{
+      toast.error(data.message);
+    }
+  }
+
+  useEffect(() => {
+    if(user){
+      fetchRooms();
+    }
+  }, [user])
+
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">{t('rooms')}</h2>
         <Button asChild>
-          <Link to="/hotel-owner/add-room">
+          <Link to="/owner/add-room">
             <Plus className="mr-2 h-4 w-4" /> {t('addRoom')}
           </Link>
         </Button>
@@ -47,18 +78,26 @@ const ListRoom = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Title</TableHead>
+              <TableHead>Room Type</TableHead>
               <TableHead>Hotel</TableHead>
               <TableHead>Price</TableHead>
+              <TableHead>Available</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rooms.map((room, index) => (
-              <TableRow key={index}>
-                <TableCell>{room.title}</TableCell>
-                <TableCell>{room.hotel}</TableCell>
-                <TableCell>${room.price}</TableCell>
+            {rooms.map((room) => (
+              <TableRow key={room._id}>
+                <TableCell>{room.roomType}</TableCell>
+                <TableCell>{room.hotel.name}</TableCell>
+                <TableCell>${room.pricePerNight}</TableCell>
+                
+                <TableCell>
+                  <Switch
+                    checked={room.isAvailable}
+                    onCheckedChange={() => toggleAvailability(room._id)}
+                  />
+                </TableCell>
                 <TableCell>
                   <Button variant="ghost" size="icon">
                     <FileEdit className="h-4 w-4" />

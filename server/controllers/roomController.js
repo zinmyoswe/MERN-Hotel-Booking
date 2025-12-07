@@ -59,7 +59,7 @@ export const getRooms = async (req, res) => {
 //API to get all rooms for a specific hotel
 export const getOwnerRooms = async (req, res) => {
     try {
-        const hotelData = await Hotel({ owner: req.auth.userId });
+        const hotelData = await Hotel.findOne({ owner: req.auth.userId });
         const rooms = await Room.find({ hotel: hotelData._id.toString() }).populate('hotel');
         res.json({ success: true, rooms });
     } catch (error) {
@@ -79,3 +79,23 @@ export const toggleRoomAvailability = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 }
+
+//API to get a single room by ID
+export const getRoomById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const room = await Room.findById(id).populate({
+            path: 'hotel',
+            populate: {
+                path: 'owner',
+                select: 'image'
+            }
+        });
+        if (!room) {
+            return res.json({ success: false, message: "Room not found." });
+        }
+        res.json({ success: true, room });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
