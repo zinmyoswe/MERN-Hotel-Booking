@@ -44,7 +44,9 @@ const AllHotels = () => {
         "Superior Double",
     ];
     const priceRanges = [
-        '0 to 500',
+        '0 to 50',
+        '50 to 100',
+        '100 to 500',
         '500 to 1000',
         '1000 to 2000',
         '2000 to 3000',

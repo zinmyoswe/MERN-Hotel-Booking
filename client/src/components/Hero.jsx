@@ -1,11 +1,35 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { assets, cities } from '../assets/assets'
 import { UsersRound } from 'lucide-react'
-
-
+import { useAppContext } from '@/context/AppContext'
 
 
 const Hero = () => {
+
+    const {navigate, getToken, axios, setSearchedCities} = useAppContext();
+    const [destination, setDestination] = useState('');
+    
+    const onSearch = async (e) => {
+        e.preventDefault();
+        navigate(`/hotels?destination=${destination}`)
+        //call api to save recent searched city
+        await axios.post('/api/user/store-recent-search',{recentSearchedCity: destination}, {
+            headers: {
+                Authorization: `Bearer ${await getToken()}`
+            }
+        }),
+
+        //add destination to searchedCities max 3 recent searched cities
+        setSearchedCities((prevSearchedCities) => {
+            const updatedSearchedCities = [...prevSearchedCities, destination];
+            if(updatedSearchedCities.length > 3){
+                updatedSearchedCities.shift();
+            }
+            return updatedSearchedCities;
+        
+        })
+    }
+
   return (
     <div className='flex flex-col items-center justify-center px-6
     md:px-16 lg:px-24 xl:px-32 text-white
@@ -17,7 +41,7 @@ const Hero = () => {
 
 
         {/* form */}
-       <form className='bg-white mt-4 md:mt-24 text-gray-800 rounded-xl p-3 md:p-4 flex flex-col md:flex-row max-md:items-start md:items-center gap-2 md:gap-4 max-md:mx-auto shadow-2xl'>
+       <form onSubmit={onSearch}  className='bg-white mt-4 md:mt-24 text-gray-800 rounded-xl p-3 md:p-4 flex flex-col md:flex-row max-md:items-start md:items-center gap-2 md:gap-4 max-md:mx-auto shadow-2xl'>
 
     {/* Destination Input - Styled for Prominence */}
     <div className='flex-grow'>
@@ -25,7 +49,10 @@ const Hero = () => {
             <img src={assets.calenderIcon} alt='Destination Icon' className='h-5 text-indigo-500' />
             <label htmlFor="destinationInput" className='font-bold text-base'>Destination</label>
         </div>
-        <input list='destinations' id="destinationInput" type="text" className="w-full rounded bg-gray-50 px-3 py-2 text-lg outline-none focus:ring-2 focus:ring-indigo-400 transition duration-150 placeholder-gray-400" placeholder="e.g. Bangkok, Thailand" required />
+        <input 
+        onChange={e => setDestination(e.target.value)}
+        value={destination}
+        list='destinations' id="destinationInput" type="text" className="w-full rounded bg-gray-50 px-3 py-2 text-lg outline-none focus:ring-2 focus:ring-indigo-400 transition duration-150 placeholder-gray-400" placeholder="e.g. Bangkok, Thailand" required />
         <datalist id='destinations'>
             {cities.map((city, index) => (
                 <option value={city} key={index} />
