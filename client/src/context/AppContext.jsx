@@ -1,11 +1,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { useLocation, useNavigate } from "react-router-dom";    
-import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";    
+import {toast} from "react-hot-toast";
 
 
-axios.defaults.baseURL = import.meta.env.VITE_BASE_URL
+axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL
 
 export const AppContext = createContext()
 
@@ -14,7 +14,6 @@ export const AppProvider = ({children}) => {
     const currency = import.meta.env.VITE_CURRENCY || '$';
     const {user} =useUser()
     const {getToken} = useAuth()
-    const location = useLocation()
     const navigate = useNavigate();
 
     const[isOwner, setIsOwner] =useState(false)
@@ -23,7 +22,7 @@ export const AppProvider = ({children}) => {
 
     const fetchUser = async() => {
         try {
-            const {data} = await axios.get('/api/user', {
+            const {data} = await axios.get('/api/users', {
                 headers: {
                     Authorization: `Bearer ${await getToken()}`
                 }
@@ -55,7 +54,6 @@ export const AppProvider = ({children}) => {
         navigate,
         user,
         getToken,
-        location,
         isOwner,
         setIsOwner,
         axios,
@@ -72,4 +70,4 @@ export const AppProvider = ({children}) => {
   )
 }
 
-export const useAppContext = () => useContext(AppContext)
+export const useAppContext = () => useContext(AppContext);
