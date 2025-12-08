@@ -16,50 +16,32 @@ const HotelDetails = () => {
     const [checkOutDate, setCheckOutDate] = useState(null);
     const [guests, setGuests] = useState(1);
 
-    const [isAvailable, setIsAvailable] = useState(false);
     const [loading, setLoading] = useState(true);
-
-    //check if the room is available
-    const checkAvailability = async () => {
-        try {
-            //Check is check in date is greater than check out date
-            if(checkInDate >= checkOutDate){
-                toast.error('Check-In Date should be less than Check-Out Date');
-                return;
-            
-            }
-            const {data} = await axios.post('/api/bookings/check-availability', {
-                room: id,
-                checkInDate,
-                checkOutDate    
-            })
-            if(data.success){
-                if(data.isAvailable){
-                    setIsAvailable(true);
-                    toast.success('Room is available');
-                }else{
-                    setIsAvailable(false);
-                    toast.error('Room is not available');
-                }
-            }else{
-                toast.error(data.message)
-            }
-        } catch (error) {
-            toast.error(error.message);
-        }
-    }
 
     //onSubmitHandler function to check availability & book the room
     const onSubmitHandler = async (e) => {
         try {
             e.preventDefault();
-            if(!isAvailable){
-                return checkAvailability();
-            }else{
-                const {data} = await axios.post('/api/bookings', {
+            if(!checkInDate || !checkOutDate){
+                toast.error('Please select Check-In and Check-Out dates');
+                return;
+            }
+            if(checkInDate >= checkOutDate){
+                toast.error('Check-In Date should be less than Check-Out Date');
+                return;
+            
+            }
+            const availabilityData = await axios.post('/api/bookings/check-availability', {
+                room: id,
+                checkInDate,
+                checkOutDate    
+            })
+            if(availabilityData.data.success && availabilityData.data.isAvailable){
+                const {data} = await axios.post('/api/bookings/book', {
                     room: id,
                     checkInDate,
                     checkOutDate,
+                    guests,
                     paymentMethod: "Pay At Hotel"}, {
                         headers: {
                             Authorization: `Bearer ${await getToken()}`
@@ -72,6 +54,8 @@ const HotelDetails = () => {
                 }else{
                     toast.error(data.message);
                 }
+            }else{
+                toast.error(availabilityData.data.message || 'Room is not available for the selected dates');
             }
             
         } catch (error) {
@@ -245,7 +229,7 @@ const HotelDetails = () => {
             text-white active:scale-95 transition-all rounded-md max-md:w-full
             max-md:mt-6 mt-9 md:px-25 py-3 md:py-4 text-base cursor-pointer"
                 >
-                    {isAvailable ? "Book Now" : "Check Availability"}
+                    Book Now
                 </button>
             </form>
 

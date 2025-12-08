@@ -78,9 +78,12 @@ const ListRoom = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Room</TableHead>
               <TableHead>Room Type</TableHead>
+              <TableHead>Room View</TableHead>
               <TableHead>Hotel</TableHead>
               <TableHead>Price</TableHead>
+              <TableHead>Address</TableHead>
               <TableHead>Available</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -88,9 +91,18 @@ const ListRoom = () => {
           <TableBody>
             {rooms.map((room) => (
               <TableRow key={room._id}>
+                <TableCell>
+                  <img 
+                src={room.images && (Array.isArray(room.images[0]) ? room.images[0][1] : room.images[0])} 
+                alt="" 
+                className='w-36 h-36 object-cover' />
+                </TableCell>
+                
                 <TableCell>{room.roomType}</TableCell>
+                <TableCell>{room.RoomView}</TableCell>
                 <TableCell>{room.hotel.name}</TableCell>
                 <TableCell>${room.pricePerNight}</TableCell>
+                <TableCell>{room.hotel.city}, {room.hotel.country}</TableCell>
                 
                 <TableCell>
                   <Switch

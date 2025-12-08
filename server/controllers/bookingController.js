@@ -5,6 +5,11 @@ import Hotel from "../models/Hotel.js";
 //Function to check availability of room
 const checkAvailability = async ( checkInDate, checkOutDate, room) => {
     try {
+        const roomDoc = await Room.findById(room);
+        if (!roomDoc || !roomDoc.isAvailable) {
+            return false;
+        }
+
         const bookings = await Booking.find({ 
             room,
             checkInDate: { $lt: new Date(checkOutDate) },
@@ -15,6 +20,7 @@ const checkAvailability = async ( checkInDate, checkOutDate, room) => {
         return isAvailable;
     } catch (error) {
         console.error(error.message);
+        return false;
     }
 }
 
@@ -23,7 +29,7 @@ const checkAvailability = async ( checkInDate, checkOutDate, room) => {
 export const checkAvailabilityAPI = async (req, res) => {
     try {
         const {room, checkInDate, checkOutDate,  } = req.body;
-        const isAvailable = await checkAvailability({ checkInDate, checkOutDate, room });
+        const isAvailable = await checkAvailability(checkInDate, checkOutDate, room);
         res.json({ success: true, isAvailable });
     } catch (error) {
         console.error(error);
@@ -40,9 +46,9 @@ export const createBooking = async (req, res) => {
         const user = req.user._id;
 
         //Before Booking Check Availability
-        const isAvailable = await checkAvailability({
+        const isAvailable = await checkAvailability(
             checkInDate, checkOutDate, room
-        });
+        );
 
         if (!isAvailable) {
             return res.json({ success: false, message: "Room is not available" });
