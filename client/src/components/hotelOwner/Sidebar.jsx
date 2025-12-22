@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Building, BedDouble, Plus, Languages, ChevronLeft, ChevronRight, HousePlus, PackagePlus, MapPin, Star, Settings } from 'lucide-react';
+import { LayoutDashboard, Building, BedDouble, Plus, Languages, ChevronLeft, ChevronRight, HousePlus, PackagePlus, MapPin, Star, Settings, Umbrella } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 // Define the menu items
@@ -13,6 +13,7 @@ const menuItems = [
   { path: '/owner/nearby-places', icon: MapPin, labelKey: 'nearbyPlaces' },
   { path: '/owner/highlights', icon: Star, labelKey: 'highlights' },
   { path: '/owner/facilities', icon: Settings, labelKey: 'facilities' },
+  { path: '/owner/staycations', icon: Umbrella, labelKey: 'staycations' },
 ];
 
 const Sidebar = () => {

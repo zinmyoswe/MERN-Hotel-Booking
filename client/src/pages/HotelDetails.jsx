@@ -4,8 +4,9 @@ import { assets } from '../assets/assets';
 import StarRating from '../components/StarRating';
 import toast from 'react-hot-toast';
 import ImageCarouselModal from '../components/ImageCarouselModal';
-import { ChevronLeft, ChevronRight, Users, Home, ShoppingBag, Locate, Hotel, PersonStanding, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Users, Home, ShoppingBag, Locate, Hotel, PersonStanding, MapPin, Umbrella } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { Loader2 } from "lucide-react";
 
 const RoomCard = ({ room, hotel, onSubmitHandler }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -92,6 +93,7 @@ const HotelDetails = () => {
     const [nearbyPlaces, setNearbyPlaces] = useState([]);
     const [highlights, setHighlights] = useState([]);
     const [facilities, setFacilities] = useState([]);
+    const [staycations, setStaycations] = useState([]);
     const [mainImage, setMainImage] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -171,6 +173,10 @@ const HotelDetails = () => {
                 const facilitiesRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/facilities/${id}`);
                 const facilitiesData = await facilitiesRes.json();
                 if (facilitiesData.success) setFacilities(facilitiesData.facilities);
+
+                const staycationsRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/staycations/${id}`);
+                const staycationsData = await staycationsRes.json();
+                if (staycationsData.success) setStaycations(staycationsData.staycations);
             } catch (err) {
                 setError(err.message);
                 toast.error(err.message);
@@ -181,7 +187,14 @@ const HotelDetails = () => {
         fetchHotelDetails();
     }, [id]);
 
-    if (loading) return <div className="py-28 text-center">Loading...</div>;
+    if (loading) {
+        return (
+          <div className="flex h-[80vh] w-full flex-col items-center justify-center gap-2">
+            <Loader2 className="h-16 w-16 animate-spin text-primary" />
+            <p className="text-muted-foreground text-sm font-medium">Just an moment</p>
+          </div>
+        );
+      }
     if (error) return <div className="py-28 text-center text-red-500">Error: {error}</div>;
 
     const getIconDisplay = (icon) => {
@@ -227,6 +240,26 @@ const HotelDetails = () => {
         return name;
     };
 
+    const getProcessedStaycationName = (name) => {
+        if (name.includes('[24-hour]')) {
+            return name.replace('[24-hour]', '24-hour');
+        }
+        return name;
+    };
+
+    const getStaycationIcon = (type) => {
+        switch (type) {
+            case 'Food and Drinks':
+                return 'https://cdn6.agoda.net/images/staycation/default/DrinkingAndDining.svg';
+            case 'Wellness':
+                return 'https://cdn6.agoda.net/images/staycation/default/wellness.svg';
+            case 'Activities':
+                return 'https://cdn6.agoda.net/images/staycation/default/activities.svg';
+            default:
+                return 'https://cdn6.agoda.net/images/staycation/default/activities.svg';
+        }
+    };
+
     return hotel && (
         <div className="py-28 md:py-35 px-4 md:px-16 lg:px-24 xl:px-32">
             <h1 className="text-3xl md:text-4xl font-playfair">{hotel.name}</h1>
@@ -247,7 +280,7 @@ const HotelDetails = () => {
                 <div className="lg:w-4/6 w-full grid grid-cols-3 gap-4">
                     {hotel.videoUrl && (
                         <div onClick={() => setIsModalOpen(true)} className="rounded-xl shadow-md overflow-hidden cursor-pointer h-full">
-                            <video src={hotel.videoUrl} autoPlay muted controls className="w-full h-full object-cover pointer-events-none"></video>
+                            <video src={hotel.videoUrl} autoPlay muted controls loop playsInline className="w-full h-full object-cover pointer-events-none"></video>
                         </div>
                     )}
                     {hotel.hotelSubImages.slice(0, 6).map((image, index) => (
@@ -366,6 +399,47 @@ const HotelDetails = () => {
                                 <p className="text-sm font-medium text-gray-800 truncate">
                                     {getProcessedFacilityName(facility.name)}
                                 </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Staycations */}
+            {staycations.length > 0 && (
+                <div className="mt-16">
+                    <h2 className="text-3xl font-playfair mb-6">Staycations</h2>
+                    <div className="space-y-6">
+                        {Object.entries(
+                            staycations.reduce((acc, staycation) => {
+                                if (!acc[staycation.staycationtype]) {
+                                    acc[staycation.staycationtype] = [];
+                                }
+                                acc[staycation.staycationtype].push(staycation);
+                                return acc;
+                            }, {})
+                        ).map(([type, activities]) => (
+                            <div key={type} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <img
+                                            src={getStaycationIcon(type)}
+                                            alt={type}
+                                            className="w-6 h-6"
+                                        />
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-gray-800">{type}</h3>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {activities.map((activity) => (
+                                        <div key={activity._id} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                                            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                                            <p className="text-sm font-medium text-gray-800">
+                                                {getProcessedStaycationName(activity.name)}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         ))}
                     </div>

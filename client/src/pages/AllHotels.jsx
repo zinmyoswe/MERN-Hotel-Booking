@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import HotelCard from '@/components/HotelCard';
 import toast from 'react-hot-toast';
 import HotelCardrow from '@/components/HotelCardrow';
+import { Loader2 } from "lucide-react";
 
 const AllHotels = () => {
   const [searchParams] = useSearchParams();
@@ -39,7 +40,15 @@ const AllHotels = () => {
     );
   }, [hotels, searchParams]);
 
-  if (loading) return <div className="pt-32 text-center font-medium">Searching for best deals...</div>;
+  // Updated Loading State with Shadcn-style Spinner
+  if (loading) {
+    return (
+      <div className="flex h-[80vh] w-full flex-col items-center justify-center gap-2">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+        <p className="text-muted-foreground text-sm font-medium">Just an moment</p>
+      </div>
+    );
+  }
 
   return (
     <div className='pt-28 md:pt-35 px-4 md:px-16 lg:px-24 xl:px-48 bg-gray-50 min-h-screen pb-20'>
