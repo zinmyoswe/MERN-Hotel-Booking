@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import HotelCard from '@/components/HotelCard';
 import toast from 'react-hot-toast';
+import HotelCardrow from '@/components/HotelCardrow';
 
 const AllHotels = () => {
   const [searchParams] = useSearchParams();
@@ -27,44 +28,38 @@ const AllHotels = () => {
         setLoading(false);
       }
     };
-
     fetchHotels();
   }, []);
 
   const filteredHotels = useMemo(() => {
     const destination = searchParams.get('destination');
-    if (!destination) {
-      return hotels;
-    }
+    if (!destination) return hotels;
     return hotels.filter(hotel =>
       hotel.city.toLowerCase().includes(destination.toLowerCase())
     );
   }, [hotels, searchParams]);
 
-  if (loading) {
-    return <div className="pt-28 md:pt-35 px-4 md:px-16 lg:px-24 xl:px-32">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="pt-28 md:pt-35 px-4 md:px-16 lg:px-24 xl:px-32">Error: {error}</div>;
-  }
+  if (loading) return <div className="pt-32 text-center font-medium">Searching for best deals...</div>;
 
   return (
-    <div className='pt-28 md:pt-35 px-4 md:px-16 lg:px-24 xl:px-32'>
+    <div className='pt-28 md:pt-35 px-4 md:px-16 lg:px-24 xl:px-48 bg-gray-50 min-h-screen pb-20'>
       <div className='flex flex-col items-start text-left mb-8'>
-        <h1 className='font-playfair text-4xl md:text-[40px]'>Discover Your Perfect Hotel</h1>
-        <p className='text-sm md:text-base text-gray-500/90 mt-2 max-w-174'>
-          Explore a wide range of hotels and find the perfect accommodation for your next trip.
-        </p>
+        <h1 className='font-sans font-bold text-2xl md:text-3xl text-gray-800'>
+          {searchParams.get('destination') ? `Hotels in ${searchParams.get('destination')}` : 'Recommended Properties'}
+        </h1>
+        <p className='text-sm text-gray-500'>Showing {filteredHotels.length} properties</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {/* Changed to a vertical stack for horizontal cards */}
+      <div className="flex flex-col gap-4">
         {filteredHotels.length > 0 ? (
           filteredHotels.map((hotel) => (
-            <HotelCard key={hotel._id} hotel={hotel} />
+            <HotelCardrow key={hotel._id} hotel={hotel} />
           ))
         ) : (
-          <p>No hotels found for the selected destination.</p>
+          <div className="bg-white p-10 rounded-xl text-center shadow-sm">
+            <p className="text-gray-500 font-medium">No hotels found for this destination.</p>
+          </div>
         )}
       </div>
     </div>
