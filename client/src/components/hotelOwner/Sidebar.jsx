@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Building, BedDouble, Plus, Languages, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Building, BedDouble, Plus, Languages, ChevronLeft, ChevronRight, HousePlus, PackagePlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 // Define the menu items
@@ -8,8 +8,8 @@ const menuItems = [
   { path: '/owner/dashboard', icon: LayoutDashboard, labelKey: 'dashboard' },
   { path: '/owner/list-hotel', icon: Building, labelKey: 'hotels' },
   { path: '/owner/list-room', icon: BedDouble, labelKey: 'rooms' },
-  { path: '/owner/add-hotel', icon: Plus, labelKey: 'addHotel' },
-  { path: '/owner/add-room', icon: Plus, labelKey: 'addRoom' },
+  { path: '/owner/add-hotel', icon: HousePlus, labelKey: 'addHotel' },
+  { path: '/owner/add-room', icon: PackagePlus, labelKey: 'addRoom' },
 ];
 
 const Sidebar = () => {

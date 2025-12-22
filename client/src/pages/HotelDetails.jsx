@@ -11,6 +11,11 @@ const RoomCard = ({ room, hotel, onSubmitHandler }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const images = Array.isArray(room.images?.[0]) ? room.images[0] : (room.images || []);
 
+     // 🔑 RESET to first image when room changes
+    useEffect(() => {
+        setCurrentIndex(1);
+    }, [room._id]);
+
     const nextImage = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -30,7 +35,7 @@ const RoomCard = ({ room, hotel, onSubmitHandler }) => {
                 <div className="relative md:col-span-2 h-48 md:h-full overflow-hidden group">
                     {images.length > 0 ? (
                         <>
-                            <img src={images[currentIndex]} className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105" alt={room.roomType} />
+                            <img src={images[currentIndex]} className="w-full h-[300px] object-cover transition-all duration-500 group-hover:scale-105" alt={room.roomType} />
                             {images.length > 1 && (
                                 <>
                                     <button onClick={prevImage} className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"><ChevronLeft size={16} /></button>
@@ -177,7 +182,7 @@ const HotelDetails = () => {
             </div>
 
             {/* Images Grid */}
-            <div className="flex flex-col lg:flex-row mt-6 gap-4 lg:gap-6">
+            <div className="flex flex-col lg:flex-row mt-6 gap-4 lg:gap-6 h-[360px]">
                 <div className="lg:w-2/6 w-full" onClick={() => setIsModalOpen(true)}>
                     <img src={mainImage} className="w-full h-full object-cover rounded-xl shadow-lg cursor-pointer" alt="Main" />
                 </div>

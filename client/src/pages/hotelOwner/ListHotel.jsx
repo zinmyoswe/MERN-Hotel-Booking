@@ -12,9 +12,11 @@ import { Plus, FileEdit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useAuth } from '@clerk/clerk-react';
 
 const ListHotel = () => {
   const { t } = useTranslation();
+  const { getToken } = useAuth();
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,7 +24,12 @@ const ListHotel = () => {
   useEffect(() => {
     const fetchHotels = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/hotels`);
+        const token = await getToken();
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/hotels/owner`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         const result = await response.json();
         if (result.success) {
           setHotels(result.hotels);
