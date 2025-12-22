@@ -11,6 +11,7 @@ import roomRouter from './routes/roomRoutes.js';
 import bookingRouter from './routes/bookingRoutes.js';
 import nearbyPlacesRouter from './routes/nearbyPlacesRoutes.js';
 import highlightRouter from './routes/highlightRoutes.js';
+import facilityRouter from './routes/facilityRoutes.js';
 
 const app = express();
 const port = 3000;
@@ -33,5 +34,6 @@ app.use('/api/rooms', roomRouter);
 app.use('/api/bookings', bookingRouter);
 app.use('/api/nearby-places', nearbyPlacesRouter);
 app.use('/api/highlights', highlightRouter);
+app.use('/api/facilities', facilityRouter);
 
 app.listen(port, ()=> console.log(`Server listening at http://localhost:${port}`));

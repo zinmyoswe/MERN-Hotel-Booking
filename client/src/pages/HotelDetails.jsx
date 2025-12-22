@@ -91,6 +91,7 @@ const HotelDetails = () => {
     const [rooms, setRooms] = useState([]);
     const [nearbyPlaces, setNearbyPlaces] = useState([]);
     const [highlights, setHighlights] = useState([]);
+    const [facilities, setFacilities] = useState([]);
     const [mainImage, setMainImage] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -166,6 +167,10 @@ const HotelDetails = () => {
                 const highlightsRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/highlights/${id}`);
                 const highlightsData = await highlightsRes.json();
                 if (highlightsData.success) setHighlights(highlightsData.highlights);
+
+                const facilitiesRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/facilities/${id}`);
+                const facilitiesData = await facilitiesRes.json();
+                if (facilitiesData.success) setFacilities(facilitiesData.facilities);
             } catch (err) {
                 setError(err.message);
                 toast.error(err.message);
@@ -212,6 +217,13 @@ const HotelDetails = () => {
             name = name.replace('[X]', highlight.customValue);
         }
         
+        return name;
+    };
+
+    const getProcessedFacilityName = (name) => {
+        if (name.includes('[24-hour]')) {
+            return name.replace('[24-hour]', '24-hour');
+        }
         return name;
     };
 
@@ -337,6 +349,23 @@ const HotelDetails = () => {
                                         {getProcessedHighlightName(highlight)}
                                     </p>
                                 </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Facilities */}
+            {facilities.length > 0 && (
+                <div className="mt-16">
+                    <h2 className="text-3xl font-playfair mb-6">Facilities</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        {facilities.slice(0, 8).map((facility) => (
+                            <div key={facility._id} className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm border border-gray-100">
+                                <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                                <p className="text-sm font-medium text-gray-800 truncate">
+                                    {getProcessedFacilityName(facility.name)}
+                                </p>
                             </div>
                         ))}
                     </div>
