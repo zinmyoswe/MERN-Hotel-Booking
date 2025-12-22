@@ -90,6 +90,7 @@ const HotelDetails = () => {
     const [hotel, setHotel] = useState(null);
     const [rooms, setRooms] = useState([]);
     const [nearbyPlaces, setNearbyPlaces] = useState([]);
+    const [highlights, setHighlights] = useState([]);
     const [mainImage, setMainImage] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -161,6 +162,10 @@ const HotelDetails = () => {
                 const nearbyRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/nearby-places/${id}`);
                 const nearbyData = await nearbyRes.json();
                 if (nearbyData.success) setNearbyPlaces(nearbyData.nearbyPlaces);
+
+                const highlightsRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/highlights/${id}`);
+                const highlightsData = await highlightsRes.json();
+                if (highlightsData.success) setHighlights(highlightsData.highlights);
             } catch (err) {
                 setError(err.message);
                 toast.error(err.message);
@@ -189,6 +194,25 @@ const HotelDetails = () => {
             default:
                 return <Locate size={20} className="text-gray-600" />;
         }
+    };
+
+    const getProcessedHighlightName = (highlight) => {
+        let name = highlight.name;
+        
+        // Handle location-based highlights
+        if (name.includes('[City]')) {
+            name = name.replace('[City]', hotel?.city || 'City');
+        }
+        if (name.includes('[Bangkok]')) {
+            name = name.replace('[Bangkok]', hotel?.city || 'Bangkok');
+        }
+        
+        // Handle customizable highlights
+        if (highlight.isCustomizable && highlight.customValue) {
+            name = name.replace('[X]', highlight.customValue);
+        }
+        
+        return name;
     };
 
     return hotel && (
@@ -282,6 +306,36 @@ const HotelDetails = () => {
                                 </div>
                                 <div className="text-right">
                                     <p className="font-semibold text-gray-800">{place.distance}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Highlights */}
+            {highlights.length > 0 && (
+                <div className="mt-16">
+                    <h2 className="text-3xl font-playfair mb-6">Highlights</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {highlights.slice(0, 5).map((highlight) => (
+                            <div key={highlight._id} className="flex items-center gap-3 p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                    highlight.isGreenIcon ? 'bg-green-100' : 'bg-gray-100'
+                                }`}>
+                                    <img
+                                        src={highlight.highlighticonurl}
+                                        alt={highlight.name}
+                                        className={`w-6 h-6 ${highlight.isGreenIcon ? 'filter brightness-0 saturate-100' : ''}`}
+                                        style={highlight.isGreenIcon ? {
+                                            filter: 'brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(1234%) hue-rotate(87deg) brightness(95%) contrast(105%)'
+                                        } : {}}
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium text-gray-800">
+                                        {getProcessedHighlightName(highlight)}
+                                    </p>
                                 </div>
                             </div>
                         ))}
