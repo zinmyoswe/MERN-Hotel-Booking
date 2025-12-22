@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useAuth } from '@clerk/clerk-react';
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(3, 'Hotel name must be at least 3 characters'),
@@ -141,7 +142,15 @@ const AddHotel = () => {
           </div>
           <div className="mt-6">
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Adding Hotel...' : t('addHotel')}
+              {/* {isSubmitting ? 'Adding Hotel...' : t('addHotel')} */}
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Adding Hotel...
+                </span>
+              ) : (
+                t('addHotel')
+              )}
             </Button>
           </div>
         </form>

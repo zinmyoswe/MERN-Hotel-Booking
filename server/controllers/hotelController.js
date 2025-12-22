@@ -10,10 +10,11 @@ export const registerHotel = async (req, res) => {
         const owner = req.auth.userId;
 
         //check if user already registered
-        const hotel = await Hotel.findOne({owner});
-        if(hotel){
-            return res.json({success: false, message: "Hotel already registered"});
-        }
+        // const hotel = await Hotel.findOne({owner});
+        // if(hotel){
+        //     return res.json({success: false, message: "Hotel already registered"});
+        // }
+        
 
         //upload images to cloudinary
         const mainImage = await cloudinary.uploader.upload(req.files.hotelMainImage[0].path);
