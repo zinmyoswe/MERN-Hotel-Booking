@@ -1,6 +1,7 @@
 import Hotel from "../models/Hotel.js";
 import User from "../models/User.js";
 import Room from "../models/Room.js";
+import NearbyPlaces from "../models/NearbyPlaces.js";
 import { v2 as cloudinary } from 'cloudinary';
 
 

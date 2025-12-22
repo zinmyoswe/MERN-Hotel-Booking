@@ -4,7 +4,7 @@ import { assets } from '../assets/assets';
 import StarRating from '../components/StarRating';
 import toast from 'react-hot-toast';
 import ImageCarouselModal from '../components/ImageCarouselModal';
-import { ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Users, Home, ShoppingBag, Locate, Hotel, PersonStanding, MapPin } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const RoomCard = ({ room, hotel, onSubmitHandler }) => {
@@ -89,6 +89,7 @@ const HotelDetails = () => {
 
     const [hotel, setHotel] = useState(null);
     const [rooms, setRooms] = useState([]);
+    const [nearbyPlaces, setNearbyPlaces] = useState([]);
     const [mainImage, setMainImage] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -156,6 +157,10 @@ const HotelDetails = () => {
                 const roomsRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/hotels/${id}/rooms`);
                 const roomsData = await roomsRes.json();
                 if (roomsData.success) setRooms(roomsData.rooms);
+
+                const nearbyRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/nearby-places/${id}`);
+                const nearbyData = await nearbyRes.json();
+                if (nearbyData.success) setNearbyPlaces(nearbyData.nearbyPlaces);
             } catch (err) {
                 setError(err.message);
                 toast.error(err.message);
@@ -168,6 +173,23 @@ const HotelDetails = () => {
 
     if (loading) return <div className="py-28 text-center">Loading...</div>;
     if (error) return <div className="py-28 text-center text-red-500">Error: {error}</div>;
+
+    const getIconDisplay = (icon) => {
+        switch (icon) {
+            case 'houseicon':
+                return <Home size={20} className="text-gray-600" />;
+            case 'shopping icon':
+                return <ShoppingBag size={20} className="text-gray-600" />;
+            case 'location icon':
+                return <MapPin size={20} className="text-gray-600" />;
+            case 'Hotel icon':
+                return <Hotel size={20} className="text-gray-600" />;
+            case 'Entertainment icon':
+                return <PersonStanding size={20} className="text-gray-600" />;
+            default:
+                return <Locate size={20} className="text-gray-600" />;
+        }
+    };
 
     return hotel && (
         <div className="py-28 md:py-35 px-4 md:px-16 lg:px-24 xl:px-32">
@@ -241,6 +263,31 @@ const HotelDetails = () => {
                     </div>
                 )}
             </div>
+
+            {/* Nearby Places */}
+            {nearbyPlaces.length > 0 && (
+                <div className="mt-16">
+                    <h2 className="text-3xl font-playfair mb-6">Nearby Places</h2>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        {nearbyPlaces.map((place, index) => (
+                            <div key={place._id} className={`flex items-center justify-between p-4 ${index !== nearbyPlaces.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                        {getIconDisplay(place.icon)}
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-gray-800">{place.name}</p>
+                                        <p className="text-sm text-gray-500">{place.type}</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="font-semibold text-gray-800">{place.distance}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Room List */}
             <div className="mt-16">

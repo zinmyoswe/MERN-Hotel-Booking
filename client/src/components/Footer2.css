@@ -1,0 +1,102 @@
+
+
+.bUPGBM {
+    padding-top: 48px;
+    padding-bottom: 12px;
+    text-align: center;
+    background-color: rgb(42, 42, 46);
+    color: rgb(215, 215, 219);
+}
+
+.hGABti {
+    font-size: 14px;
+    line-height: 14px;
+    font-weight: 300;
+    margin: 8px;
+}
+
+.hGABti {
+    font-size: 14px;
+    line-height: 14px;
+    font-weight: 300;
+    margin: 8px;
+}
+
+.a5d5b-text-inherit {
+    color: inherit;
+}
+.a5d5b-fill-inherit {
+    fill: inherit;
+}
+.a5d5b-justify-between {
+    justify-content: space-between;
+}
+.a5d5b-flex {
+    display: flex;
+}
+.a5d5b-m-auto {
+    margin: auto;
+}
+.a5d5b-box {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.a5d5b-mr-0 {
+    margin-right: var(--ads-spacing-0);
+}
+.a5d5b-ml-0 {
+    margin-left: var(--ads-spacing-0);
+}
+
+.a5d5b-m-auto {
+    margin: auto;
+}
+
+.cQOFtp {
+    width: 144px;
+    height: 48px;
+}
+
+img {
+    border: 0;
+    vertical-align: middle;
+}
+
+.cQOFtp {
+    width: 144px;
+    height: 48px;
+}
+
+img {
+    border: 0;
+    vertical-align: middle;
+}
+/* --------------------------------------------- */
+
+
+.ads-agoda-deprecateInaccessibleColor {
+    --ads-bg-deprecated-neutral-4: #eff4fc;
+    --ads-bg-deprecated-neutral-5: #5e6b82;
+    --ads-bg-deprecated-neutral-alpha-1: rgba(4, 7, 10, .24);
+    --ads-bg-deprecated-neutral-disabled-1: rgba(37, 44, 56, .08);
+    --ads-bg-deprecated-neutral-disabled-2: rgba(37, 44, 56, .08);
+    --ads-bg-deprecated-neutral-disabled-3: rgba(37, 44, 56, .08);
+    --ads-bg-deprecated-neutral-disabled-4: rgba(37, 44, 56, .08);
+    --ads-bg-deprecated-primary-brand: #2067da;
+    --ads-bg-deprecated-primary-citycenter: #2067da;
+    --ads-bg-deprecated-primary-easycancel: #e5efff;
+    --ads-bg-deprecated-primary-golocal: #2067da;
+    --ads-bg-deprecated-primary-map-landmark: #2067da;
+    --ads-bg-deprecated-primary-map-shopping: #2067da;
+    --ads-bg-deprecated-primary-map-transportation: #2067da;
+    --ads-bg-deprecated-primary-new: #2067da;
+    --ads-bg-deprecated-primary-preferred: #2067da;
+    --ads-border-deprecated-neutral-4: #5e6b82;
+    --ads-border-deprecated-neutral-disabled-1: #5e6b82;
+    --ads-border-deprecated-primary-preferred: #2067da;
+    --ads-colors-deprecated-neutral-disabled-2: rgba(37, 44, 56, .24);
+    --ads-colors-deprecated-primary-easycancel: #2067da;
+    --ads-colors-deprecated-primary-golocal: #fff;
+    --ads-colors-deprecated-primary-vip-gold: #fff;
+    --ads-colors-deprecated-secondary-interactive: #252c38;
+}

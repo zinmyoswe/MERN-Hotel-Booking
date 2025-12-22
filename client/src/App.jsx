@@ -14,8 +14,10 @@ import ListRoom from './pages/hotelOwner/ListRoom';
 import AddHotel from './pages/hotelOwner/AddHotel';
 import AddRoom from './pages/hotelOwner/AddRoom';
 import EditHotel from './pages/hotelOwner/EditHotel';
+import NearbyPlaces from './pages/hotelOwner/NearbyPlaces';
 import {Toaster} from 'react-hot-toast';
 import { useAppContext } from './context/AppContext';
+import Footer2 from './components/Footer2';
 
 const App = () => {
   const isOwnerPath = useLocation().pathname.startsWith('owner');
@@ -43,8 +45,11 @@ const App = () => {
             <Route path="add-hotel" element={<AddHotel />} />
             <Route path="edit-hotel/:id" element={<EditHotel />} />
             <Route path="add-room" element={<AddRoom />} />
+            <Route path="nearby-places" element={<NearbyPlaces />} />
           </Route>
         </Routes>
+
+        <Footer2 />
       </div>
     </div>
   );
