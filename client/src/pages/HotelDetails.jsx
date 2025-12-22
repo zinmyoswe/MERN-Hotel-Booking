@@ -1,25 +1,100 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { assets, facilityIcons, roomCommonData } from '../assets/assets';
+import { useParams, useNavigate } from 'react-router-dom';
+import { assets } from '../assets/assets';
 import StarRating from '../components/StarRating';
-import { UsersRound } from 'lucide-react';
-import { useAppContext } from '@/context/AppContext';
-import { toast } from 'react-hot-toast';
+import toast from 'react-hot-toast';
+import ImageCarouselModal from '../components/ImageCarouselModal';
+import { ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
+
+const RoomCard = ({ room, hotel, onSubmitHandler }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const images = Array.isArray(room.images?.[0]) ? room.images[0] : (room.images || []);
+
+    const nextImage = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    };
+
+    const prevImage = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    };
+
+    return (
+        <div className="border rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="grid grid-cols-1 md:grid-cols-6 h-full">
+                {/* Image Column */}
+                <div className="relative md:col-span-2 h-48 md:h-full overflow-hidden group">
+                    {images.length > 0 ? (
+                        <>
+                            <img src={images[currentIndex]} className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105" alt={room.roomType} />
+                            {images.length > 1 && (
+                                <>
+                                    <button onClick={prevImage} className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"><ChevronLeft size={16} /></button>
+                                    <button onClick={nextImage} className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"><ChevronRight size={16} /></button>
+                                </>
+                            )}
+                        </>
+                    ) : (
+                        <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">No Image</div>
+                    )}
+                </div>
+
+                {/* Details Column */}
+                <div className="md:col-span-3 p-5 flex flex-col justify-center border-b md:border-b-0 md:border-r border-gray-100">
+                    <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">{room.roomType}</h3>
+                        <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded font-bold uppercase">Available</span>
+                    </div>
+                    <h6 className="text-sm text-blue-600 font-medium mt-1 uppercase tracking-tight">{room.RoomView || 'Standard View'}</h6>
+                    <p className="text-gray-500 text-sm mt-3 line-clamp-2">{room.description}</p>
+                    <div className="flex flex-wrap items-center mt-4 gap-2">
+                        {room.amenities.slice(0, 10).map((amenity, index) => (
+                            <span key={index} className="bg-gray-100 text-gray-600 px-2 py-1 text-[10px] rounded-md border border-gray-200">{amenity}</span>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Price & Action Column */}
+                <div className="md:col-span-1 p-5 flex flex-col items-center justify-center bg-gray-50/50">
+                    <div className="text-center mb-4">
+                        <span className="text-[10px] text-gray-400 block uppercase font-bold">Per Night</span>
+                        <p className="text-2xl font-black text-indigo-600">${room.pricePerNight}</p>
+                        <span className="text-[10px] text-gray-400">Taxes included</span>
+                    </div>
+                    <button 
+                        onClick={(e) => onSubmitHandler(e, room._id)}
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-3 rounded-lg transition-all text-center shadow-sm"
+                    >
+                        BOOK NOW
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const HotelDetails = () => {
     const { id } = useParams();
-    const { axios, rooms, getToken, navigate } = useAppContext();
+    const navigate = useNavigate();
+    const { axios, getToken } = useAppContext();
 
-    const [room, setRoom] = useState(null);
+    const [hotel, setHotel] = useState(null);
+    const [rooms, setRooms] = useState([]);
     const [mainImage, setMainImage] = useState(null);
-    const [checkInDate, setCheckInDate] = useState(null);
-    const [checkOutDate, setCheckOutDate] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Form States
+    const [checkInDate, setCheckInDate] = useState('');
+    const [checkOutDate, setCheckOutDate] = useState('');
     const [guests, setGuests] = useState(1);
 
-    const [loading, setLoading] = useState(true);
-
-    //onSubmitHandler function to check availability & book the room
-    const onSubmitHandler = async (e) => {
+    const onSubmitHandler = async (e, roomId) => {
         try {
             e.preventDefault();
             if(!checkInDate || !checkOutDate){
@@ -29,248 +104,159 @@ const HotelDetails = () => {
             if(checkInDate >= checkOutDate){
                 toast.error('Check-In Date should be less than Check-Out Date');
                 return;
-            
             }
+
             const availabilityData = await axios.post('/api/bookings/check-availability', {
-                room: id,
+                room: roomId,
                 checkInDate,
                 checkOutDate    
-            })
+            });
+
             if(availabilityData.data.success && availabilityData.data.isAvailable){
                 const {data} = await axios.post('/api/bookings/book', {
-                    room: id,
+                    room: roomId,
                     checkInDate,
                     checkOutDate,
                     guests,
-                    paymentMethod: "Pay At Hotel"}, {
-                        headers: {
-                            Authorization: `Bearer ${await getToken()}`
-                        }
-                    })
+                    paymentMethod: "Pay At Hotel"
+                }, {
+                    headers: { Authorization: `Bearer ${await getToken()}` }
+                });
+
                 if(data.success){
                     toast.success(data.message);
                     navigate('/my-bookings');
-                    scrollTo(0,0);
-                }else{
+                    window.scrollTo(0,0);
+                } else {
                     toast.error(data.message);
                 }
-            }else{
+            } else {
                 toast.error(availabilityData.data.message || 'Room is not available for the selected dates');
             }
-            
         } catch (error) {
             toast.error(error.message);
         }
-    }
-        
-
+    };
 
     useEffect(() => {
-        const room = rooms.find(room => room._id === id)
-        room && setRoom(room);
-        room && setMainImage(room.images[0][2]);
-    },[rooms])
+        const fetchHotelDetails = async () => {
+            try {
+                setLoading(true);
+                const hotelRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/hotels/${id}`);
+                const hotelData = await hotelRes.json();
+                if (hotelData.success) {
+                    setHotel(hotelData.hotel);
+                    setMainImage(hotelData.hotel.hotelMainImage);
+                }
+                const roomsRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/hotels/${id}/rooms`);
+                const roomsData = await roomsRes.json();
+                if (roomsData.success) setRooms(roomsData.rooms);
+            } catch (err) {
+                setError(err.message);
+                toast.error(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchHotelDetails();
+    }, [id]);
 
-    
+    if (loading) return <div className="py-28 text-center">Loading...</div>;
+    if (error) return <div className="py-28 text-center text-red-500">Error: {error}</div>;
 
-    return room && (
+    return hotel && (
         <div className="py-28 md:py-35 px-4 md:px-16 lg:px-24 xl:px-32">
-            {/* Hotel Details */}
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
-                <h1 className="text-3xl md:text-4xl font-playfair">
-                    {room.hotel.name}
-                    <span className="font-inter text-sm">({room.roomType})</span>
-                </h1>
-                <p className="text-xs font-inter py-1.5 px-3 text-white bg-orange-500 rounded-full">20% OFF</p>
-            </div>
-
-            {/* Hotel Rating */}
+            <h1 className="text-3xl md:text-4xl font-playfair">{hotel.name}</h1>
             <div className="flex items-center gap-1 mt-2">
                 <StarRating />
                 <p className="ml-2">200+ reviews</p>
             </div>
-
-            {/* Hotel Address */}
             <div className="flex items-center gap-1 text-gray-500 mt-2">
                 <img src={assets.locationIcon} alt="location-icon" />
-                <span>{room.hotel.address}</span>
+                <span>{hotel.address}</span>
             </div>
 
-            
-            {/* Hotel Images */}
-<div className="flex flex-col lg:flex-row mt-6 gap-4 lg:gap-6 lg:items-stretch">
-    
-    {/* 1. Main Image Container (Left) - Takes up height of its content */}
-    <div className="lg:w-1/2 w-full relative">
-        <div className="relative h-full rounded-xl shadow-lg overflow-hidden">
-            <img 
-                src={mainImage} 
-                alt="Hotel Main Image" 
-                // Changed from aspect-[5/4] to h-full to match sibling container's height
-                className="w-full h-full object-cover" 
-            />
-            {/* Overlay Button to View More Photos (Agoda-style) */}
-            <button 
-                className="absolute bottom-4 right-4 bg-white text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-xl text-sm hover:bg-gray-100 transition duration-150"
-            >
-                View all photos
-            </button>
-        </div>
-    </div>
-
-    {/* 2. Thumbnail Grid Container (Right) - Key changes for height matching */}
-    <div className="grid grid-cols-2 gap-4 lg:w-1/2 w-full 
-                    lg:h-[450px] lg:max-h-[450px] lg:aspect-[5/4] lg:h-auto 
-                    lg:grid-rows-2 lg:grid-cols-2">
-        {Array.isArray(room.images[0]) &&
-            room.images[0].slice(0, 4).map((image, index) => (
-                <div 
-                    key={index}
-                    onClick={() => setMainImage(image)}
-                    // Added h-full and removed fixed aspect-square to let the grid rows define height
-                    className={`rounded-xl shadow-md overflow-hidden cursor-pointer h-full 
-                        ${mainImage === image ? 'ring-4 ring-orange-500 ring-offset-2' : 'hover:opacity-90 transition duration-150'}`}
-                >
-                    <img
-                        src={image}
-                        alt={`Hotel Thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover" 
-                    />
+            {/* Images Grid */}
+            <div className="flex flex-col lg:flex-row mt-6 gap-4 lg:gap-6">
+                <div className="lg:w-2/6 w-full" onClick={() => setIsModalOpen(true)}>
+                    <img src={mainImage} className="w-full h-full object-cover rounded-xl shadow-lg cursor-pointer" alt="Main" />
                 </div>
-            ))
-        }
-    </div>
-</div>
-            {/* Hotel Highlights */}
-            <div className="flex flex-col md:flex-row md:justify-between mt-10">
-                <div className="flex flex-col">
-                    <h1 className="text-3xl md:text-4xl font-playfair">Experience Luxury Like Never Before</h1>
-                    <div className="flex flex-wrap items-center mt-3 mb-6 gap-4">
-                        {room.amenities.map((item, index) => (
-                            <div key={index} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100">
-                                <img src={facilityIcons[item]} alt="item" className="w-5 h-5" />
-                                <p className="text-xs">{item}</p>
+                <div className="lg:w-4/6 w-full grid grid-cols-3 gap-4">
+                    {hotel.videoUrl && (
+                        <div onClick={() => setIsModalOpen(true)} className="rounded-xl shadow-md overflow-hidden cursor-pointer h-full">
+                            <video src={hotel.videoUrl} autoPlay muted controls className="w-full h-full object-cover pointer-events-none"></video>
+                        </div>
+                    )}
+                    {hotel.hotelSubImages.slice(0, 6).map((image, index) => (
+                        <div key={index} onClick={() => setIsModalOpen(true)} className="rounded-xl shadow-md overflow-hidden cursor-pointer h-full">
+                            <img src={image} className="w-full h-full object-cover" alt="Sub" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <ImageCarouselModal mainImage={mainImage} subImages={hotel.hotelSubImages} open={isModalOpen} onOpenChange={setIsModalOpen} />
+
+            {/* Booking Form Bar */}
+            <div className="mt-12 p-6 bg-white border border-gray-100 rounded-2xl shadow-xl">
+                <h2 className="text-xl font-bold mb-4">Set Your Travel Dates</h2>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold text-gray-400">CHECK-IN</label>
+                        <input type="date" required className="p-2.5 border rounded-lg outline-none focus:border-indigo-600" onChange={(e) => setCheckInDate(e.target.value)} />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold text-gray-400">CHECK-OUT</label>
+                        <input type="date" required className="p-2.5 border rounded-lg outline-none focus:border-indigo-600" onChange={(e) => setCheckOutDate(e.target.value)} />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold text-gray-400">GUESTS</label>
+                        <select className="p-2.5 border rounded-lg outline-none bg-white" onChange={(e) => setGuests(e.target.value)}>
+                            {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} {n === 1 ? 'Guest' : 'Guests'}</option>)}
+                        </select>
+                    </div>
+                    <div className="text-xs text-gray-400 italic pb-3"></div>
+                </div>
+            </div>
+
+            <div className='flex flex-col md:flex-row gap-3 mt-10'>
+                <div className='lg:w-4/6 w-full'>
+                    <h2 className="text-3xl font-playfair">About this hotel</h2>
+                    <p className="text-gray-600 mt-2">{hotel.description}</p>
+                </div>
+                {hotel.mapUrl && (
+                    <div className='lg:w-2/6 w-full'>
+                        <h2 className="text-3xl font-playfair mb-4">Location</h2>
+                        <a href={hotel.mapUrl} target="_blank" rel="noopener noreferrer" className="relative block w-full group overflow-hidden rounded-lg shadow-lg cursor-pointer">
+                            <img src={assets.propertyMapEntry} className="w-full h-36 object-cover transition-transform group-hover:scale-105" alt="Map" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition-colors">
+                                <span className="bg-white text-black px-8 py-2 rounded-full font-bold text-sm uppercase">See Map</span>
                             </div>
-                        ))}
+                        </a>
                     </div>
-                </div>
-
-                {/* Hotel Price */}
-                <p className="text-2xl font-medium">${room.pricePerNight}/night</p>
+                )}
             </div>
 
-            {/* CheckIn CheckOut Form */}
-            <form
-                onSubmit={onSubmitHandler}
-                className="flex flex-col md:flex-row items-start md:items-center
-        justify-between bg-white shadow-[0px_0px_20px_rgba(0,0,0,0.15)] p-6 rounded-xl
-        mx-auto mt-16 max-w-6xl"
-            >
-                <div
-                    className="flex flex-col flex-wrap md:flex-row items-start
-            md:items-center gap-4 md:gap-10 text-gray-500"
-                >
-                    <div className="flex flex-col">
-                        <div className="flex flex-wrap items-center gap-2 h-12">
-                            <img src={assets.zcheckin} alt="" />
-                            Check In
-                            <label htmlFor="checkInDate" className="font-medium"></label>
-                        </div>
-                        <input
-                            onChange={(e) => setCheckInDate(e.target.value)}
-                            min={new Date().toISOString().split('T')[0]}
-                            type="date"
-                            id="checkInDate"
-                            placeholder="Check-In"
-                            className="w-full rounded border border-gray-300 px-3 py-2 mt-1.5 outline-none"
-                            required
-                        />
-                    </div>
-
-                    <div className="w-px h-15 bg-gray-300/70 max-md:hidden"></div>
-                    <div className="flex flex-col">
-                        <div className="flex flex-wrap items-center gap-2 h-12">
-                            <img src={assets.zcheckout} alt="" />
-                            Check Out
-                            <label htmlFor="checkOutDate" className="font-medium"></label>
-                        </div>
-                        <input
-                            onChange={(e) => setCheckOutDate(e.target.value)}
-                            min={checkInDate} disabled={!checkInDate}
-                            type="date"
-                            id="checkOutDate"
-                            placeholder="Check-Out"
-                            className="w-full rounded border border-gray-300 px-3 py-2 mt-1.5 outline-none"
-                            required
-                        />
-                    </div>
-
-                    <div className="w-px h-15 bg-gray-300/70 max-md:hidden"></div>
-                    <div className="flex flex-col">
-                        <div className="flex flex-wrap items-center gap-2 h-12">
-                            <UsersRound />
-                            Guests
-                            <label htmlFor="guests" className="font-medium"></label>
-                        </div>
-                        <input
-                            onChange={(e)=>setGuests(e.target.value)}
-                            value={guests}
-                            type="number"
-                            id="guests"
-                            placeholder="1"
-                            className="w-full rounded border border-gray-300 px-3 py-2 mt-1.5 outline-none"
-                            required
-                        />
-                    </div>
+            {/* Room List */}
+            <div className="mt-16">
+                <h2 className="text-3xl font-playfair">Available Rooms</h2>
+                <div className="mt-6 space-y-6">
+                    {rooms.length > 0 ? (
+                        rooms.map(room => (
+                            <RoomCard key={room._id} room={room} hotel={hotel} onSubmitHandler={onSubmitHandler} />
+                        ))
+                    ) : (
+                        <p>No rooms available for this hotel at the moment.</p>
+                    )}
                 </div>
-                <button
-                    type="submit"
-                    className="bg-primary hover:bg-indigo-500
-            text-white active:scale-95 transition-all rounded-md max-md:w-full
-            max-md:mt-6 mt-9 md:px-25 py-3 md:py-4 text-base cursor-pointer"
-                >
-                    Book Now
-                </button>
-            </form>
-
-            {/* Common Specifications */}
-            <div className="mt-25 space-y-4">
-                {roomCommonData.map((spec, index) => (
-                    <div key={index} className="flex items-start gap-2">
-                        <img src={spec.icon} alt={`${spec.title}-icon`} className="w-6.5" />
-                        <div>
-                            <p className="text-base">{spec.title}</p>
-                            <p className="text-gray-500">{spec.description}</p>
-                        </div>
-                    </div>
-                ))}
             </div>
 
-            <div className="max-w-3xl border-y border-gray-300 my-15 py-10 text-gray-500">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Vitae, commodi voluptas, animi recusandae
-                voluptatem facilis harum eos magnam magni nulla fugiat quis beatae optio delectus modi pariatur eius.
-                Dolorum, et?
-            </div>
-
-            {/* Hosted by */}
-            <div className="flex flex-col items-start gap-4">
-                <div className="flex gap-4">
-                    <img src={room.hotel.owner.image} alt="Host" className="h-14 w-14
-                md:h-18 md:w-18 rounded-full" />
-                    <div>
-                        <p className="text-lg md:text-xl">Hosted by {room.hotel.name}</p>
-                        <div className="flex items-center mt-1">
-                            <StarRating />
-                            <p className="ml-2">200+ reviews</p>
-                        </div>
-                    </div>
+            <div className="mt-15 flex items-center gap-4">
+                {hotel.owner.image && <img src={hotel.owner.image} alt="Host" className="h-14 w-14 rounded-full" />}
+                <div>
+                    <p className="text-lg font-medium">Hosted by {hotel.owner.name || hotel.name}</p>
+                    <div className="flex items-center mt-1"><StarRating /><p className="ml-2 text-sm text-gray-500">Property Host</p></div>
                 </div>
-                <button
-                    className="bg-primary text-white mt-4 px-6 py-2.5 rounded
-            hover:bg-indigo-500 transition-all cursor-pointer"
-                >
-                    Contact Now
-                </button>
             </div>
         </div>
     );

@@ -11,6 +11,10 @@ const hotelSchema = new mongoose.Schema(
     country: { type: String, required: true }, 
     zipcode: { type: String, required: true },
     description: { type: String, required: true },
+    hotelMainImage: { type: String, required: true },
+    hotelSubImages: { type: [String] },
+    videoUrl: { type: String },
+    mapUrl: { type: String },
   },
   { timestamps: true }
 );
