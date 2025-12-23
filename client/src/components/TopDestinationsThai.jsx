@@ -165,7 +165,7 @@ const TopDestinationsThai = () => {
 </div>
 
           {/* Dots Indicator */}
-          <div className="flex justify-center mt-6 space-x-2">
+          <div className="flex justify-center mt-6 space-x-2 hidden">
             {Array.from({ length: maxIndex + 1 }, (_, i) => (
               <button
                 key={i}

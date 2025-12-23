@@ -3,6 +3,7 @@ import Hero from '../components/Hero'
 import FeaturedDestination from '../components/FeaturedDestination'
 import RecommendedHotels from '@/components/RecommendedHotels'
 import TopDestinationsThai from '../components/TopDestinationsThai'
+import Promotion from '@/components/Promotion'
 
 
 const Home = () => {
@@ -11,6 +12,8 @@ const Home = () => {
         <Hero />
 
         <TopDestinationsThai />
+        <Promotion />
+
         <FeaturedDestination />
         <RecommendedHotels />
         
