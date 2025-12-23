@@ -5,6 +5,8 @@ import './HotelCardrow.css'
 
 const HotelCardrow = ({ hotel }) => {
   const [distance, setDistance] = useState(null);
+  const [rooms, setRooms] = useState([]);
+  const [loadingRooms, setLoadingRooms] = useState(true);
 
   useEffect(() => {
     const fetchDistance = async () => {
@@ -19,8 +21,26 @@ const HotelCardrow = ({ hotel }) => {
       }
     };
 
+    const fetchRooms = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/hotels/${hotel._id}/rooms`);
+        const data = await response.json();
+        if (data.success) {
+          setRooms(data.rooms);
+        }
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+      } finally {
+        setLoadingRooms(false);
+      }
+    };
+
     fetchDistance();
+    fetchRooms();
   }, [hotel._id]);
+
+  // Calculate the cheapest room price
+  const cheapestPrice = rooms.length > 0 ? Math.min(...rooms.map(room => room.pricePerNight)) : null;
   return (
     <Link 
       to={`/hotels/${hotel._id}`} 
@@ -82,9 +102,9 @@ const HotelCardrow = ({ hotel }) => {
 
           {/* Distance Information */}
           {distance && (
-            <div className="mt-3 space-y-1">
+            <div className="space-y-1">
              
-              <div className='sc-bdfBwQ Typographystyled__TypographyStyled-sc-1uoovui-0 jfliTI GzRDU'>
+              <div className='jfliTI GzRDU'>
               {distance.subDistances && distance.subDistances.slice(0, 2).map((subDistance, index) => (
                 <div key={index} className="">
                   <span className="text-gray-500"> • </span>
@@ -113,13 +133,21 @@ const HotelCardrow = ({ hotel }) => {
 
       {/* COLUMN 6: VIEW DETAIL / PRICE ACTION (md:col-span-1) */}
       <div className='md:col-span-1 p-5 bg-gray-50/50 flex flex-col items-end justify-end text-right'>
-        <div className="mb-4">
-          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Price starting at</p>
-          <p className="text-2xl font-black text-red-500 leading-tight">
-            ${hotel.price || '120'}
-          </p>
-          <p className="text-[10px] text-gray-400">per night</p>
-        </div>
+        {cheapestPrice !== null && !loadingRooms && (
+          <div className="mb-4">
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Price starting at</p>
+            <p className="text-2xl font-black text-red-500 leading-tight">
+              ${cheapestPrice}
+            </p>
+            <p className="text-[10px] text-gray-400">per night</p>
+          </div>
+        )}
+
+        {loadingRooms && (
+          <div className="mb-4">
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Loading prices...</p>
+          </div>
+        )}
 
         <button className='w-full px-4 py-3 text-sm font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm'>
           View Details
