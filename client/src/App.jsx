@@ -14,6 +14,7 @@ import ListRoom from './pages/hotelOwner/ListRoom';
 import AddHotel from './pages/hotelOwner/AddHotel';
 import AddRoom from './pages/hotelOwner/AddRoom';
 import EditHotel from './pages/hotelOwner/EditHotel';
+import EditRoom from './pages/hotelOwner/EditRoom';
 import NearbyPlaces from './pages/hotelOwner/NearbyPlaces';
 import Highlights from './pages/hotelOwner/Highlights';
 import Facilities from './pages/hotelOwner/Facilities';
@@ -50,6 +51,7 @@ const App = () => {
             <Route path="add-hotel" element={<AddHotel />} />
             <Route path="edit-hotel/:id" element={<EditHotel />} />
             <Route path="add-room" element={<AddRoom />} />
+            <Route path="edit-room/:id" element={<EditRoom />} />
             <Route path="nearby-places" element={<NearbyPlaces />} />
             <Route path="highlights" element={<Highlights />} />
             <Route path="facilities" element={<Facilities />} />

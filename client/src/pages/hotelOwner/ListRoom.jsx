@@ -111,9 +111,11 @@ const ListRoom = () => {
                   />
                 </TableCell>
                 <TableCell>
-                  <Button variant="ghost" size="icon">
-                    <FileEdit className="h-4 w-4" />
-                  </Button>
+                  <Link to={`/owner/edit-room/${room._id}`}>
+                    <Button variant="ghost" size="icon">
+                      <FileEdit className="h-4 w-4" />
+                    </Button>
+                  </Link>
                   <Button variant="ghost" size="icon">
                     <Trash className="h-4 w-4" />
                   </Button>

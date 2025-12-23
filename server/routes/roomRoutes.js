@@ -1,7 +1,7 @@
 import express from 'express';
 import upload from '../middleware/uploadMiddleware.js';
 import { protect } from '../middleware/authMiddleware.js';
-import { createRoom, getOwnerRooms, getRooms, toggleRoomAvailability, getRoomById } from '../controllers/roomController.js';
+import { createRoom, getOwnerRooms, getRooms, toggleRoomAvailability, getRoomById, updateRoom } from '../controllers/roomController.js';
 
 const roomRouter = express.Router();
 
@@ -10,6 +10,7 @@ roomRouter.get('/', getRooms);
 roomRouter.get('/owner', protect, getOwnerRooms);
 roomRouter.post('/toggle-availability', protect, toggleRoomAvailability);
 roomRouter.get('/:id', getRoomById);
+roomRouter.put('/:id', upload.array('images', 4), protect, updateRoom);
 
 
 export default roomRouter;

@@ -7,11 +7,13 @@ import { populate } from "dotenv";
 //API to create a new room for a hotel
 export const createRoom = async (req, res) => {
     try {
-        const {  roomType, pricePerNight, amenities, isAvailable, RoomView, Adults, Bed, SquareFeet } = req.body;
-        const hotel = await Hotel.findOne({ owner: req.auth.userId });
+        const { hotel: hotelId, roomType, pricePerNight, amenities, isAvailable, RoomView, Adults, Bed, SquareFeet } = req.body;
+
+        // Verify that the hotel exists and belongs to the authenticated user
+        const hotel = await Hotel.findOne({ _id: hotelId, owner: req.auth.userId });
 
         if (!hotel) {
-            return res.json({ success: false, message: "No Hotel found." });
+            return res.json({ success: false, message: "Hotel not found or access denied." });
         }
 
         //upload images to cloudinary
@@ -23,7 +25,7 @@ export const createRoom = async (req, res) => {
         const images = await Promise.all(uploadedImages)
 
         await Room.create({
-            hotel: hotel._id,
+            hotel: hotelId,
             roomType,
             pricePerNight: +pricePerNight,
             amenities: JSON.parse(amenities),
@@ -59,8 +61,12 @@ export const getRooms = async (req, res) => {
 //API to get all rooms for a specific hotel
 export const getOwnerRooms = async (req, res) => {
     try {
-        const hotelData = await Hotel.findOne({ owner: req.auth.userId });
-        const rooms = await Room.find({ hotel: hotelData._id.toString() }).populate('hotel');
+        // Get all hotels owned by the user
+        const hotels = await Hotel.find({ owner: req.auth.userId });
+        const hotelIds = hotels.map(hotel => hotel._id.toString());
+
+        // Find rooms for all hotels owned by the user
+        const rooms = await Room.find({ hotel: { $in: hotelIds } }).populate('hotel').sort({ createdAt: -1 });
         res.json({ success: true, rooms });
     } catch (error) {
         res.json({ success: false, message: error.message });
@@ -99,3 +105,52 @@ export const getRoomById = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
+
+//API to update a room
+export const updateRoom = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { hotel: hotelId, roomType, pricePerNight, amenities, isAvailable, RoomView, Adults, Bed, SquareFeet } = req.body;
+
+        // Find the room and verify ownership
+        const room = await Room.findById(id).populate('hotel');
+        if (!room) {
+            return res.json({ success: false, message: "Room not found." });
+        }
+
+        // Verify that the hotel belongs to the authenticated user
+        const hotel = await Hotel.findOne({ _id: room.hotel._id, owner: req.auth.userId });
+        if (!hotel) {
+            return res.json({ success: false, message: "Access denied." });
+        }
+
+        // Handle image updates if new images are provided
+        let updatedImages = room.images;
+        if (req.files && req.files.length > 0) {
+            // Upload new images to cloudinary
+            const uploadedImages = req.files.map(async (file) => {
+                const result = await cloudinary.uploader.upload(file.path);
+                return result.secure_url;
+            });
+            updatedImages = await Promise.all(uploadedImages);
+        }
+
+        // Update the room
+        const updatedRoom = await Room.findByIdAndUpdate(id, {
+            hotel: hotelId || room.hotel._id,
+            roomType,
+            pricePerNight: +pricePerNight,
+            amenities: JSON.parse(amenities),
+            images: updatedImages,
+            isAvailable,
+            RoomView,
+            Adults,
+            Bed,
+            SquareFeet
+        }, { new: true });
+
+        res.json({ success: true, message: "Room updated successfully", room: updatedRoom });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};;
