@@ -18,6 +18,7 @@ import NearbyPlaces from './pages/hotelOwner/NearbyPlaces';
 import Highlights from './pages/hotelOwner/Highlights';
 import Facilities from './pages/hotelOwner/Facilities';
 import Staycations from './pages/hotelOwner/Staycations';
+import Distance from './pages/hotelOwner/Distance';
 import {Toaster} from 'react-hot-toast';
 import { useAppContext } from './context/AppContext';
 import Footer2 from './components/Footer2';
@@ -53,6 +54,7 @@ const App = () => {
             <Route path="highlights" element={<Highlights />} />
             <Route path="facilities" element={<Facilities />} />
             <Route path="staycations" element={<Staycations />} />
+            <Route path="distance" element={<Distance />} />
           </Route>
         </Routes>
 

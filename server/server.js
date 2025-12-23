@@ -13,6 +13,7 @@ import nearbyPlacesRouter from './routes/nearbyPlacesRoutes.js';
 import highlightRouter from './routes/highlightRoutes.js';
 import facilityRouter from './routes/facilityRoutes.js';
 import staycationRouter from './routes/staycationRoutes.js';
+import distanceRouter from './routes/distanceRoutes.js';
 
 const app = express();
 const port = 3000;
@@ -37,5 +38,6 @@ app.use('/api/nearby-places', nearbyPlacesRouter);
 app.use('/api/highlights', highlightRouter);
 app.use('/api/facilities', facilityRouter);
 app.use('/api/staycations', staycationRouter);
+app.use('/api/distances', distanceRouter);
 
 app.listen(port, ()=> console.log(`Server listening at http://localhost:${port}`));

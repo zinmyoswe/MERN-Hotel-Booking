@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { assets } from '../assets/assets.js';
+import './HotelCardrow.css'
 
 const HotelCardrow = ({ hotel }) => {
+  const [distance, setDistance] = useState(null);
+
+  useEffect(() => {
+    const fetchDistance = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/distances/${hotel._id}`);
+        const data = await response.json();
+        if (data.success) {
+          setDistance(data.distance);
+        }
+      } catch (error) {
+        console.error('Error fetching distance:', error);
+      }
+    };
+
+    fetchDistance();
+  }, [hotel._id]);
   return (
     <Link 
       to={`/hotels/${hotel._id}`} 
@@ -53,8 +71,29 @@ const HotelCardrow = ({ hotel }) => {
 
           <div className='flex items-center gap-1 mt-3 text-sm text-blue-500'>
             <img src={assets.locationIcon} alt="location" className="w-3" />
-            <span className="hover:underline">{hotel.address}, {hotel.city} </span>
+            <span className="hover:underline">{hotel.address}, {hotel.city}
+               
+              {distance?.mainDistance && (
+                <span className='ml-2'>- {distance.mainDistance}</span>
+              )}
+
+               </span>
           </div>
+
+          {/* Distance Information */}
+          {distance && (
+            <div className="mt-3 space-y-1">
+             
+              <div className='sc-bdfBwQ Typographystyled__TypographyStyled-sc-1uoovui-0 jfliTI GzRDU'>
+              {distance.subDistances && distance.subDistances.slice(0, 2).map((subDistance, index) => (
+                <div key={index} className="">
+                  <span className="text-gray-500"> • </span>
+                  <span>{subDistance}</span>
+                </div>
+              ))}
+              </div>
+            </div>
+          )}
 
           {/* Agoda Tags */}
           <div className="flex gap-2 mt-4">
