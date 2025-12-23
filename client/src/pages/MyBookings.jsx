@@ -52,9 +52,9 @@ const MyBookings = () => {
                     {/* Hotel Details */}
                     <div className='flex flex-col md:flex-row'>
                         <img
-                        src={booking.room.images && (Array.isArray(booking.room.images[0]) ? booking.room.images[0][2] : booking.room.images[0])}
+                        src={booking.room.images && (Array.isArray(booking.room.images[0]) ? booking.room.images[0][0] : booking.room.images[0])}
                         alt="hotel-img"
-                        className='min-md:w-44 rounded shadow object-cover'
+                        className='min-md:w-44 h-[180px] rounded shadow object-cover'
                         />
                         <div className='flex flex-col gap-1.5 max-md:mt-3 min-md:ml-4'>
                             <p className='font-playfair text-2xl'>

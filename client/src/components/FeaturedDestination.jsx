@@ -28,7 +28,7 @@ const FeaturedDestination = () => {
 
     if (loading) {
         return (
-            <div className='flex flex-col items-center px-6 md:px-16 lg:px-24 bg-slate-50 py-20'>
+            <div className='flex flex-col items-center px-6 md:px-16 lg:px-24 py-20'>
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Loading featured destinations...</p>
@@ -38,9 +38,10 @@ const FeaturedDestination = () => {
     }
 
     return hotels.length > 0 && (
-        <div className='flex flex-col items-center px-6 md:px-16 lg:px-24 bg-slate-50 py-20'>
+        
+        <div className='flex flex-col items-center px-6 md:px-16 lg:px-24  py-20'>
 
-            <Title title='Featured Destination' subTitle='Lorem ipsum dolor, sit amet consectetur adipisicing elit. Accusantium fuga quam voluptate quia laboriosam impedit pariatur numquam magnam eum facilis, maiores, id aut eius corrupti voluptatum ad eos ipsa molestias?'/>
+            <h2 className="text-2xl font-bold text-gray-800">Featured homes recommended for you</h2>
             <div className='flex flex-wrap items-center justify-center gap-6 mt-20'>
                 {hotels.map((hotel) => (
                     <HotelCard key={hotel._id} hotel={hotel} />
