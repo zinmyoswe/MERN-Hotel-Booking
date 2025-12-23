@@ -5,6 +5,7 @@ import RecommendedHotels from '@/components/RecommendedHotels'
 import TopDestinationsThai from '../components/TopDestinationsThai'
 import Promotion from '@/components/Promotion'
 import FlightActivitiesPromotion from '@/components/FlightActivitiesPromotion'
+import PropertiesRecommend from '@/components/PropertiesRecommend'
 
 
 const Home = () => {
@@ -15,6 +16,7 @@ const Home = () => {
         <TopDestinationsThai />
         <Promotion />
         <FlightActivitiesPromotion />
+        <PropertiesRecommend />
 
         <FeaturedDestination />
         <RecommendedHotels />
