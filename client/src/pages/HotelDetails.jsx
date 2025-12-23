@@ -293,6 +293,52 @@ const HotelDetails = () => {
 
             <ImageCarouselModal mainImage={mainImage} subImages={hotel.hotelSubImages} open={isModalOpen} onOpenChange={setIsModalOpen} />
 
+            {/* Cheapest Room Price Display */}
+            {rooms.length > 0 && (
+                <div className="mt-6  border border-white rounded-lg p-6 shadow-sm">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-800 mb-1">Best Price Guarantee</h3>
+                            <p className="text-sm text-gray-600">Starting from our cheapest available room</p>
+                        </div>
+                        <div className="flex items-center gap-6">
+                            <div className="text-right">
+                                <div className="flex items-center gap-2">
+                                    <span className='text-xs text-gray-500'>from</span>
+                                    <div className="text-3xl font-medium font-black text-red-500">
+                                        
+                                       ${Math.min(...rooms.map(room => room.pricePerNight))}
+                                    </div>
+                                    <div className="text-sm text-gray-500">
+                                        <div className="font-medium">per night</div>
+                                        <div className="text-xs">taxes included</div>
+                                    </div>
+                                </div>
+                                <div className="mt-2">
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        ✓ Lowest Price Available
+                                    </span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    const roomsSection = document.getElementById('rooms-section');
+                                    if (roomsSection) {
+                                        roomsSection.scrollIntoView({
+                                            behavior: 'smooth',
+                                            block: 'start'
+                                        });
+                                    }
+                                }}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+                            >
+                                View this deal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Booking Form Bar */}
             <div className="mt-12 p-6 bg-white border border-gray-100 rounded-2xl shadow-xl">
                 <h2 className="text-xl font-bold mb-4">Set Your Travel Dates</h2>
@@ -307,9 +353,25 @@ const HotelDetails = () => {
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-gray-400">GUESTS</label>
-                        <select className="p-2.5 border rounded-lg outline-none bg-white" onChange={(e) => setGuests(e.target.value)}>
+                        <select className="p-3 border rounded-lg outline-none bg-white" onChange={(e) => setGuests(e.target.value)}>
                             {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} {n === 1 ? 'Guest' : 'Guests'}</option>)}
                         </select>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <button
+                                onClick={() => {
+                                    const roomsSection = document.getElementById('rooms-section');
+                                    if (roomsSection) {
+                                        roomsSection.scrollIntoView({
+                                            behavior: 'smooth',
+                                            block: 'start'
+                                        });
+                                    }
+                                }}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+                            >
+                                Book Now
+                            </button>
                     </div>
                     <div className="text-xs text-gray-400 italic pb-3"></div>
                 </div>
@@ -447,7 +509,7 @@ const HotelDetails = () => {
             )}
 
             {/* Room List */}
-            <div className="mt-16">
+            <div id="rooms-section" className="mt-16">
                 <h2 className="text-3xl font-playfair">Available Rooms</h2>
                 <div className="mt-6 space-y-6">
                     {rooms.length > 0 ? (
