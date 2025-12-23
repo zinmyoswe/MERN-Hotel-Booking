@@ -34,10 +34,23 @@ const AllHotels = () => {
 
   const filteredHotels = useMemo(() => {
     const destination = searchParams.get('destination');
-    if (!destination) return hotels;
-    return hotels.filter(hotel =>
-      hotel.city.toLowerCase().includes(destination.toLowerCase())
-    );
+    const city = searchParams.get('city');
+
+    let filtered = hotels;
+
+    if (destination) {
+      filtered = filtered.filter(hotel =>
+        hotel.city.toLowerCase().includes(destination.toLowerCase())
+      );
+    }
+
+    if (city) {
+      filtered = filtered.filter(hotel =>
+        hotel.city.toLowerCase().includes(city.toLowerCase())
+      );
+    }
+
+    return filtered;
   }, [hotels, searchParams]);
 
   // Updated Loading State with Shadcn-style Spinner

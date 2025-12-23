@@ -146,3 +146,15 @@ export const updateHotel = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 }
+
+export const getHotelCountByCity = async (req, res) => {
+    try {
+        const { city } = req.params;
+
+        const count = await Hotel.countDocuments({ city: new RegExp(city, 'i') });
+
+        res.json({ success: true, count });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+}

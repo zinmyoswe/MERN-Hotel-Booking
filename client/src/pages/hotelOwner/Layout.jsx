@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import Navbar from '../../components/hotelOwner/Navbar'
 import Sidebar from '@/components/hotelOwner/Sidebar'
 import { Outlet } from 'react-router-dom'
-import { Toaster } from 'react-hot-toast'
 import { useAppContext } from '@/context/AppContext'
 
 const Layout = () => {
@@ -27,7 +26,6 @@ const Layout = () => {
           </div>
         </main>
       </div>
-      <Toaster position="bottom-right" />
     </div>
   )
 }

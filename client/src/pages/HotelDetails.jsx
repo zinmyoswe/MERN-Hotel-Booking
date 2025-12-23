@@ -191,7 +191,7 @@ const HotelDetails = () => {
         return (
           <div className="flex h-[80vh] w-full flex-col items-center justify-center gap-2">
             <Loader2 className="h-16 w-16 animate-spin text-primary" />
-            <p className="text-muted-foreground text-sm font-medium">Just an moment</p>
+            {/* <p className="text-muted-foreground text-sm font-medium">Just an moment</p> */}
           </div>
         );
       }

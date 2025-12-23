@@ -21,9 +21,10 @@ import Staycations from './pages/hotelOwner/Staycations';
 import {Toaster} from 'react-hot-toast';
 import { useAppContext } from './context/AppContext';
 import Footer2 from './components/Footer2';
+import Footer1 from './components/Footer1';
 
 const App = () => {
-  const isOwnerPath = useLocation().pathname.startsWith('owner');
+  const isOwnerPath = useLocation().pathname.startsWith('/owner');
   const {showHotelRegister} = useAppContext();
 
   return (
@@ -55,7 +56,7 @@ const App = () => {
           </Route>
         </Routes>
 
-        
+        {!isOwnerPath && <Footer1 />}
         {!isOwnerPath && <Footer2 />}
       </div>
     </div>

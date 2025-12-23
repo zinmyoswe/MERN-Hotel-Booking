@@ -53,7 +53,7 @@ const HotelCardrow = ({ hotel }) => {
 
           <div className='flex items-center gap-1 mt-3 text-sm text-blue-500'>
             <img src={assets.locationIcon} alt="location" className="w-3" />
-            <span className="hover:underline">{hotel.address}</span>
+            <span className="hover:underline">{hotel.address}, {hotel.city} </span>
           </div>
 
           {/* Agoda Tags */}
