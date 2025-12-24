@@ -45,6 +45,7 @@ const AddRoom = () => {
   const [inputs, setInputs] = useState({
     roomType: '',
     pricePerNight: '',
+    quantity: 1,
     isAvailable: true,
     RoomView: '',
     Adults: '',
@@ -122,6 +123,7 @@ const AddRoom = () => {
       !selectedHotel ||
       !inputs.roomType ||
       !inputs.pricePerNight ||
+      !inputs.quantity ||
       !inputs.RoomView ||
       !inputs.Adults ||
       !inputs.Bed ||
@@ -137,6 +139,7 @@ const AddRoom = () => {
       formData.append('hotel', selectedHotel);
       formData.append('roomType', inputs.roomType);
       formData.append('pricePerNight', inputs.pricePerNight);
+      formData.append('quantity', inputs.quantity);
       formData.append('isAvailable', inputs.isAvailable);
       formData.append('RoomView', inputs.RoomView);
       formData.append('Adults', inputs.Adults);
@@ -163,6 +166,7 @@ const AddRoom = () => {
         setInputs({
           roomType: '',
           pricePerNight: '',
+          quantity: 1,
           isAvailable: true,
           RoomView: '',
           Adults: '',
@@ -233,6 +237,18 @@ const AddRoom = () => {
                 type="number"
                 placeholder="eg.100"
                 value={inputs.pricePerNight}
+                onChange={onInputChangeHandler}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quantity">Quantity</Label>
+              <Input
+                id="quantity"
+                name="quantity"
+                type="number"
+                min="1"
+                placeholder="e.g. 5"
+                value={inputs.quantity}
                 onChange={onInputChangeHandler}
               />
             </div>

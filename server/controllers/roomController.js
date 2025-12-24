@@ -7,7 +7,7 @@ import { populate } from "dotenv";
 //API to create a new room for a hotel
 export const createRoom = async (req, res) => {
     try {
-        const { hotel: hotelId, roomType, pricePerNight, amenities, isAvailable, RoomView, Adults, Bed, SquareFeet } = req.body;
+        const { hotel: hotelId, roomType, pricePerNight, quantity, amenities, isAvailable, RoomView, Adults, Bed, SquareFeet } = req.body;
 
         // Verify that the hotel exists and belongs to the authenticated user
         const hotel = await Hotel.findOne({ _id: hotelId, owner: req.auth.userId });
@@ -28,6 +28,7 @@ export const createRoom = async (req, res) => {
             hotel: hotelId,
             roomType,
             pricePerNight: +pricePerNight,
+            quantity: quantity ? +quantity : 1,
             amenities: JSON.parse(amenities),
             images,
             isAvailable,
@@ -106,11 +107,25 @@ export const getRoomById = async (req, res) => {
     }
 };
 
+//API to get total available rooms count for a hotel
+export const getHotelAvailableRoomsCount = async (req, res) => {
+    try {
+        const { hotelId } = req.params;
+        
+        const rooms = await Room.find({ hotel: hotelId, isAvailable: true });
+        const totalAvailable = rooms.reduce((sum, room) => sum + (room.quantity || 1), 0);
+        
+        res.json({ success: true, availableRoomsCount: totalAvailable });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+
 //API to update a room
 export const updateRoom = async (req, res) => {
     try {
         const { id } = req.params;
-        const { hotel: hotelId, roomType, pricePerNight, amenities, isAvailable, RoomView, Adults, Bed, SquareFeet } = req.body;
+        const { hotel: hotelId, roomType, pricePerNight, quantity, amenities, isAvailable, RoomView, Adults, Bed, SquareFeet } = req.body;
 
         // Find the room and verify ownership
         const room = await Room.findById(id).populate('hotel');
@@ -140,6 +155,7 @@ export const updateRoom = async (req, res) => {
             hotel: hotelId || room.hotel._id,
             roomType,
             pricePerNight: +pricePerNight,
+            quantity: quantity ? +quantity : room.quantity,
             amenities: JSON.parse(amenities),
             images: updatedImages,
             isAvailable,

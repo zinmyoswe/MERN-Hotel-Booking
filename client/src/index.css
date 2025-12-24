@@ -27,9 +27,13 @@
   font-family: Playfair !important;
 }  */
 
-/* html,body{
+*{
   font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
-}  */
+} 
+
+html body,html body button,html body input,html body optgroup,html body select,html body textarea {
+    font-family: Helvetica Neue,Helvetica,Arial,sans-serif
+}
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);

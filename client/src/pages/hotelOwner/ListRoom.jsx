@@ -83,6 +83,7 @@ const ListRoom = () => {
               <TableHead>Room View</TableHead>
               <TableHead>Hotel</TableHead>
               <TableHead>Price</TableHead>
+              <TableHead>Quantity</TableHead>
               <TableHead>Address</TableHead>
               <TableHead>Available</TableHead>
               <TableHead>Actions</TableHead>
@@ -102,6 +103,7 @@ const ListRoom = () => {
                 <TableCell>{room.RoomView}</TableCell>
                 <TableCell>{room.hotel.name}</TableCell>
                 <TableCell>${room.pricePerNight}</TableCell>
+                <TableCell>{room.quantity || 1}</TableCell>
                 <TableCell>{room.hotel.city}, {room.hotel.country}</TableCell>
                 
                 <TableCell>

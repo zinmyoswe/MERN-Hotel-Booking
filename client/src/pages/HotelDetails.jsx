@@ -29,6 +29,23 @@ const RoomCard = ({ room, hotel, onSubmitHandler }) => {
         setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
     };
 
+    // Generate room availability label
+    const getRoomAvailabilityLabel = () => {
+        const quantity = room.quantity || 1;
+        if (quantity === 1) {
+            return "Our last room!";
+        } else if (quantity === 2) {
+            return "Our last 2 rooms!";
+        } else if (quantity === 3) {
+            return "Our last 3 rooms!";
+        } else if (quantity === 4) {
+            return "Our last 4 rooms!";
+        }
+        return null; // Don't show label if more than 4 rooms available
+    };
+
+    const availabilityLabel = getRoomAvailabilityLabel();
+
     return (
         <div className="border rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
             <div className="grid grid-cols-1 md:grid-cols-6 h-full">
@@ -42,6 +59,12 @@ const RoomCard = ({ room, hotel, onSubmitHandler }) => {
                                     <button onClick={prevImage} className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"><ChevronLeft size={16} /></button>
                                     <button onClick={nextImage} className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"><ChevronRight size={16} /></button>
                                 </>
+                            )}
+                            {/* Room Availability Badge */}
+                            {availabilityLabel && (
+                                <div className="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider">
+                                    {availabilityLabel}
+                                </div>
                             )}
                         </>
                     ) : (
@@ -98,6 +121,7 @@ const HotelDetails = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [availableRoomsCount, setAvailableRoomsCount] = useState(0);
 
     // Form States
     const [checkInDate, setCheckInDate] = useState('');
@@ -128,6 +152,24 @@ const HotelDetails = () => {
             setCheckOutDate('');
         }
     };
+
+    // Generate room availability label
+    const getRoomAvailabilityLabel = () => {
+        if (availableRoomsCount === 0) {
+            return "Sold out on your dates!";
+        } else if (availableRoomsCount === 1) {
+            return "Only One Left";
+        } else if (availableRoomsCount === 2) {
+            return "Only Two Left";
+        } else if (availableRoomsCount === 3) {
+            return "Only Three Left";
+        } else if (availableRoomsCount === 4) {
+            return "Only Four Left";
+        }
+        return null; // Don't show label if more than 4 rooms available
+    };
+
+    const availabilityLabel = getRoomAvailabilityLabel();
 
     const onSubmitHandler = async (e, roomId) => {
         try {
@@ -206,6 +248,10 @@ const HotelDetails = () => {
                 const staycationsRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/staycations/${id}`);
                 const staycationsData = await staycationsRes.json();
                 if (staycationsData.success) setStaycations(staycationsData.staycations);
+
+                const availableCountRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/rooms/hotel/${id}/available-count`);
+                const availableCountData = await availableCountRes.json();
+                if (availableCountData.success) setAvailableRoomsCount(availableCountData.availableRoomsCount);
             } catch (err) {
                 setError(err.message);
                 toast.error(err.message);
@@ -295,6 +341,11 @@ const HotelDetails = () => {
             <div className="flex items-center gap-1 mt-2">
                 <StarRating />
                 <p className="ml-2">200+ reviews</p>
+                {availabilityLabel && (
+                    <span className="ml-4 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded uppercase">
+                        {availabilityLabel}
+                    </span>
+                )}
             </div>
             <div className="flex items-center gap-1 text-gray-500 mt-2">
                 <img src={assets.locationIcon} alt="location-icon" />

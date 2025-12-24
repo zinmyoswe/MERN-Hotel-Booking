@@ -7,6 +7,7 @@ const HotelCardrow = ({ hotel }) => {
   const [distance, setDistance] = useState(null);
   const [rooms, setRooms] = useState([]);
   const [loadingRooms, setLoadingRooms] = useState(true);
+  const [availableRoomsCount, setAvailableRoomsCount] = useState(0);
 
   useEffect(() => {
     const fetchDistance = async () => {
@@ -35,12 +36,43 @@ const HotelCardrow = ({ hotel }) => {
       }
     };
 
+    const fetchAvailableRoomsCount = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/rooms/hotel/${hotel._id}/available-count`);
+        const data = await response.json();
+        if (data.success) {
+          setAvailableRoomsCount(data.availableRoomsCount);
+        }
+      } catch (error) {
+        console.error('Error fetching available rooms count:', error);
+      }
+    };
+
     fetchDistance();
     fetchRooms();
+    fetchAvailableRoomsCount();
   }, [hotel._id]);
 
   // Calculate the cheapest room price
   const cheapestPrice = rooms.length > 0 ? Math.min(...rooms.map(room => room.pricePerNight)) : null;
+
+  // Generate room availability label
+  const getRoomAvailabilityLabel = () => {
+    if (availableRoomsCount === 0) {
+      return "Sold out on your dates!";
+    } else if (availableRoomsCount === 1) {
+      return "Only One Left";
+    } else if (availableRoomsCount === 2) {
+      return "Only Two Left";
+    } else if (availableRoomsCount === 3) {
+      return "Only Three Left";
+    } else if (availableRoomsCount === 4) {
+      return "Only Four Left";
+    }
+    return null; // Don't show label if more than 4 rooms available
+  };
+
+  const availabilityLabel = getRoomAvailabilityLabel();
   return (
     <Link 
       to={`/hotels/${hotel._id}`} 
@@ -58,6 +90,12 @@ const HotelCardrow = ({ hotel }) => {
         <div className="absolute top-3 left-3 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider">
           Preferred
         </div>
+        {/* Room Availability Badge */}
+        {availabilityLabel && (
+          <div className="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider">
+            {availabilityLabel}
+          </div>
+        )}
       </div>
 
       {/* COLUMN 3, 4 & 5: HOTEL DETAILS (md:col-span-3) */}

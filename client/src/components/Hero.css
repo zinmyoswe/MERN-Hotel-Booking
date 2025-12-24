@@ -1,0 +1,35 @@
+
+
+.kQKjYj {
+    width: 100%;
+    z-index: 996;
+}
+
+.a5d5b-text-inherit {
+    color: inherit;
+}
+
+.a5d5b-fill-inherit {
+    fill: inherit;
+}
+.a5d5b-justify-center {
+    justify-content: center;
+}
+.a5d5b-items-center {
+    align-items: center;
+}
+.a5d5b-flex-col {
+    flex-direction: column;
+}
+.a5d5b-w-full {
+    width: 100%;
+}
+.a5d5b-flex {
+    display: flex;
+}
+.a5d5b-relative {
+    position: relative;
+}
+.a5d5b-box {
+    -webkit-tap-highlight-color: transparent;
+}
