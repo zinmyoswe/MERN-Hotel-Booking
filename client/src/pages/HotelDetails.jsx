@@ -4,7 +4,7 @@ import { assets } from '../assets/assets';
 import StarRating from '../components/StarRating';
 import toast from 'react-hot-toast';
 import ImageCarouselModal from '../components/ImageCarouselModal';
-import { ChevronLeft, ChevronRight, Users, Home, ShoppingBag, Locate, Hotel, PersonStanding, MapPin, Umbrella } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Users, Home, ShoppingBag, Locate, Hotel, PersonStanding, MapPin, Umbrella, Calendar, ArrowRight } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Loader2 } from "lucide-react";
 
@@ -104,6 +104,31 @@ const HotelDetails = () => {
     const [checkOutDate, setCheckOutDate] = useState('');
     const [guests, setGuests] = useState(1);
 
+    // Helper function to get today's date in YYYY-MM-DD format
+    const getTodayDate = () => {
+        const today = new Date();
+        return today.toISOString().split('T')[0];
+    };
+
+    // Helper function to get the next day from a given date
+    const getNextDay = (dateString) => {
+        if (!dateString) return getTodayDate();
+        const date = new Date(dateString);
+        date.setDate(date.getDate() + 1);
+        return date.toISOString().split('T')[0];
+    };
+
+    // Handle check-in date change
+    const handleCheckInChange = (e) => {
+        const newCheckInDate = e.target.value;
+        setCheckInDate(newCheckInDate);
+        
+        // Reset check-out date if it's not valid anymore
+        if (checkOutDate && checkOutDate <= newCheckInDate) {
+            setCheckOutDate('');
+        }
+    };
+
     const onSubmitHandler = async (e, roomId) => {
         try {
             e.preventDefault();
@@ -113,6 +138,10 @@ const HotelDetails = () => {
             }
             if(checkInDate >= checkOutDate){
                 toast.error('Check-In Date should be less than Check-Out Date');
+                return;
+            }
+            if(checkInDate < getTodayDate()){
+                toast.error('Check-In Date cannot be in the past');
                 return;
             }
 
@@ -339,43 +368,83 @@ const HotelDetails = () => {
                 </div>
             )}
 
-            {/* Booking Form Bar */}
-            <div className="mt-12 p-6 bg-white border border-gray-100 rounded-2xl shadow-xl">
-                <h2 className="text-xl font-bold mb-4">Set Your Travel Dates</h2>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                    <div className="flex flex-col gap-1">
-                        <label className="text-xs font-bold text-gray-400">CHECK-IN</label>
-                        <input type="date" required className="p-2.5 border rounded-lg outline-none focus:border-indigo-600" onChange={(e) => setCheckInDate(e.target.value)} />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="text-xs font-bold text-gray-400">CHECK-OUT</label>
-                        <input type="date" required className="p-2.5 border rounded-lg outline-none focus:border-indigo-600" onChange={(e) => setCheckOutDate(e.target.value)} />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="text-xs font-bold text-gray-400">GUESTS</label>
-                        <select className="p-3 border rounded-lg outline-none bg-white" onChange={(e) => setGuests(e.target.value)}>
-                            {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} {n === 1 ? 'Guest' : 'Guests'}</option>)}
-                        </select>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <button
-                                onClick={() => {
-                                    const roomsSection = document.getElementById('rooms-section');
-                                    if (roomsSection) {
-                                        roomsSection.scrollIntoView({
-                                            behavior: 'smooth',
-                                            block: 'start'
-                                        });
-                                    }
-                                }}
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
-                            >
-                                Book Now
-                            </button>
-                    </div>
-                    <div className="text-xs text-gray-400 italic pb-3"></div>
-                </div>
+           {/* Booking Form Bar */}
+<div className="mt-12 p-8 bg-white border border-gray-100 rounded-3xl shadow-2xl">
+    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+        <div>
+            <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Set Your Travel Dates</h2>
+            <p className="text-sm text-gray-500">Plan your next adventure with ease.</p>
+        </div>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+        {/* CHECK-IN */}
+        <div className="relative group">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-1.5 ml-1">
+                Check-In
+            </label>
+            <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                <input 
+                    type="date" 
+                    required 
+                    min={getTodayDate()}
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none transition-all duration-200 focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 text-gray-700 font-medium" 
+                    onChange={handleCheckInChange}
+                    value={checkInDate}
+                />
             </div>
+        </div>
+
+        {/* CHECK-OUT */}
+        <div className="relative group">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-1.5 ml-1">
+                Check-Out
+            </label>
+            <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                <input 
+                    type="date" 
+                    required 
+                    min={checkInDate ? getNextDay(checkInDate) : getTodayDate()}
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none transition-all duration-200 focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 text-gray-700 font-medium" 
+                    onChange={(e) => setCheckOutDate(e.target.value)}
+                    value={checkOutDate}
+                />
+            </div>
+        </div>
+
+        {/* GUESTS */}
+        <div className="relative group">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-1.5 ml-1">
+                Guests
+            </label>
+            <div className="relative">
+                <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                <select 
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none appearance-none transition-all duration-200 focus:bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 text-gray-700 font-medium cursor-pointer"
+                    onChange={(e) => setGuests(e.target.value)}
+                >
+                    {[1, 2, 3, 4, 5].map(n => (
+                        <option key={n} value={n}>{n} {n === 1 ? 'Guest' : 'Guests'}</option>
+                    ))}
+                </select>
+            </div>
+        </div>
+
+        {/* SUBMIT BUTTON */}
+        <button
+            onClick={() => {
+                const roomsSection = document.getElementById('rooms-section');
+                roomsSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 shadow-[0_10px_20px_-10px_rgba(79,70,229,0.5)] active:scale-95"
+        >
+            Book Now
+            <ArrowRight className="w-5 h-5" />
+        </button>
+    </div>
+</div>
 
             <div className='flex flex-col md:flex-row gap-3 mt-10'>
                 <div className='lg:w-4/6 w-full'>
