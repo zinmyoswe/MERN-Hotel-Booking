@@ -32,13 +32,13 @@ const AddRoom = () => {
   const roomTypeOptions = [
     'Single Room', 'Double Room', 'Twin Room', '2-Bedroom Double', '1 King Room',
     'King Room', 'Triple Room', 'Quad Room',
-    'Deluxe Room', 'Deluxe Twin Room', 'Grand Deluxe Room', 'Superior Room',
-    'Executive Room', 'Premier Room', 'Family Room', 'Connecting Rooms',
+    'Deluxe Room', 'Deluxe Twin Room', 'Deluxe Room Twin Beds', 'Grand Deluxe Room', 'Superior Room', 'Superior King Room' , 'Superior Room Twin Beds',
+    'Executive Room', 'Premier Room', 'Family Room',
     'Dormitory Room (Hostel / shared)',
   ];
 
   const bedOptions = [
-    'Single Bed', 'Double Bed', 'Queen Bed', 'King Bed', 'Twin Beds',
+    'Single Bed', '2 Single Beds', 'Double Bed', 'Queen Bed', 'King Bed', 'Twin Beds',
     'Bunk Bed', 'Sofa Bed', 'Extra Bed',
   ];
 

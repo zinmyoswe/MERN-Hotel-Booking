@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import HotelCard from '@/components/HotelCard';
 import toast from 'react-hot-toast';
 import HotelCardrow from '@/components/HotelCardrow';
-import { Loader2 } from "lucide-react";
+import { Loader2, SlidersHorizontal, ChevronRight, MapPin, Search } from "lucide-react";
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { useAppContext } from '@/context/AppContext';
 
 const AllHotels = () => {
@@ -14,9 +14,8 @@ const AllHotels = () => {
   const [hotels, setHotels] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // Filter states
+  // --- All Original Filter States Restored ---
   const [selectedPriceRanges, setSelectedPriceRanges] = useState([]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [selectedRoomTypes, setSelectedRoomTypes] = useState([]);
@@ -30,21 +29,9 @@ const AllHotels = () => {
           axios.get('/api/hotels'),
           axios.get('/api/rooms')
         ]);
-
-        if (hotelsResponse.data.success) {
-          setHotels(hotelsResponse.data.hotels);
-        } else {
-          setError(hotelsResponse.data.message);
-          toast.error(hotelsResponse.data.message || 'Failed to fetch hotels.');
-        }
-
-        if (roomsResponse.data.success) {
-          setRooms(roomsResponse.data.rooms);
-        } else {
-          toast.error(roomsResponse.data.message || 'Failed to fetch rooms.');
-        }
+        if (hotelsResponse.data.success) setHotels(hotelsResponse.data.hotels);
+        if (roomsResponse.data.success) setRooms(roomsResponse.data.rooms);
       } catch (err) {
-        setError(err.message);
         toast.error('An error occurred while fetching data.');
       } finally {
         setLoading(false);
@@ -53,29 +40,17 @@ const AllHotels = () => {
     fetchData();
   }, [axios]);
 
-  // Get unique values for filters
-  const uniqueCities = useMemo(() => {
-    const cities = [...new Set(hotels.map(hotel => hotel.city))];
-    return cities.sort();
-  }, [hotels]);
-
+  // --- Unique Value Logic (Original Restored) ---
+  const uniqueCities = useMemo(() => [...new Set(hotels.map(h => h.city))].sort(), [hotels]);
+  
   const uniqueAmenities = useMemo(() => {
     const amenities = new Set();
-    rooms.forEach(room => {
-      room.amenities.forEach(amenity => amenities.add(amenity));
-    });
+    rooms.forEach(room => room.amenities.forEach(a => amenities.add(a)));
     return Array.from(amenities).sort();
   }, [rooms]);
 
-  const uniqueRoomTypes = useMemo(() => {
-    const roomTypes = [...new Set(rooms.map(room => room.roomType))];
-    return roomTypes.sort();
-  }, [rooms]);
-
-  const uniqueBedTypes = useMemo(() => {
-    const bedTypes = [...new Set(rooms.map(room => room.Bed))];
-    return bedTypes.sort();
-  }, [rooms]);
+  const uniqueRoomTypes = useMemo(() => [...new Set(rooms.map(r => r.roomType))].sort(), [rooms]);
+  const uniqueBedTypes = useMemo(() => [...new Set(rooms.map(r => r.Bed))].sort(), [rooms]);
 
   const priceRanges = [
     { label: '$0 - $50', min: 0, max: 50 },
@@ -84,63 +59,41 @@ const AllHotels = () => {
     { label: '$200+', min: 200, max: Infinity }
   ];
 
+  // --- Filtering Logic (Original Restored) ---
   const filteredHotels = useMemo(() => {
-    const destination = searchParams.get('destination');
-    const city = searchParams.get('city');
+    const destination = searchParams.get('destination')?.toLowerCase();
+    const cityParam = searchParams.get('city')?.toLowerCase();
 
     let filtered = hotels;
 
-    // Filter by destination/city from URL
-    if (destination) {
-      filtered = filtered.filter(hotel =>
-        hotel.city.toLowerCase().includes(destination.toLowerCase())
-      );
-    }
+    if (destination) filtered = filtered.filter(h => h.city.toLowerCase().includes(destination));
+    if (cityParam) filtered = filtered.filter(h => h.city.toLowerCase().includes(cityParam));
+    if (selectedCities.length > 0) filtered = filtered.filter(h => selectedCities.includes(h.city));
 
-    if (city) {
-      filtered = filtered.filter(hotel =>
-        hotel.city.toLowerCase().includes(city.toLowerCase())
-      );
-    }
-
-    // Filter by selected cities
-    if (selectedCities.length > 0) {
-      filtered = filtered.filter(hotel => selectedCities.includes(hotel.city));
-    }
-
-    // Filter by room-based criteria
     filtered = filtered.filter(hotel => {
       const hotelRooms = rooms.filter(room => room.hotel._id === hotel._id);
-
-      // Price range filter
+      
       if (selectedPriceRanges.length > 0) {
-        const hasMatchingPrice = hotelRooms.some(room => {
-          return selectedPriceRanges.some(rangeLabel => {
-            const range = priceRanges.find(r => r.label === rangeLabel);
-            return range && room.pricePerNight >= range.min && room.pricePerNight <= range.max;
-          });
-        });
-        if (!hasMatchingPrice) return false;
+        const hasMatch = hotelRooms.some(room => selectedPriceRanges.some(label => {
+          const range = priceRanges.find(r => r.label === label);
+          return range && room.pricePerNight >= range.min && room.pricePerNight <= range.max;
+        }));
+        if (!hasMatch) return false;
       }
 
-      // Amenities filter
       if (selectedAmenities.length > 0) {
-        const hasMatchingAmenities = hotelRooms.some(room => {
-          return selectedAmenities.every(amenity => room.amenities.includes(amenity));
-        });
-        if (!hasMatchingAmenities) return false;
+        const hasMatch = hotelRooms.some(room => selectedAmenities.every(a => room.amenities.includes(a)));
+        if (!hasMatch) return false;
       }
 
-      // Room types filter
       if (selectedRoomTypes.length > 0) {
-        const hasMatchingRoomType = hotelRooms.some(room => selectedRoomTypes.includes(room.roomType));
-        if (!hasMatchingRoomType) return false;
+        const hasMatch = hotelRooms.some(room => selectedRoomTypes.includes(room.roomType));
+        if (!hasMatch) return false;
       }
 
-      // Bed types filter
       if (selectedBedTypes.length > 0) {
-        const hasMatchingBedType = hotelRooms.some(room => selectedBedTypes.includes(room.Bed));
-        if (!hasMatchingBedType) return false;
+        const hasMatch = hotelRooms.some(room => selectedBedTypes.includes(room.Bed));
+        if (!hasMatch) return false;
       }
 
       return true;
@@ -149,153 +102,152 @@ const AllHotels = () => {
     return filtered;
   }, [hotels, rooms, searchParams, selectedPriceRanges, selectedAmenities, selectedRoomTypes, selectedBedTypes, selectedCities]);
 
-  const handlePriceRangeChange = (rangeLabel, checked) => {
-    setSelectedPriceRanges(prev =>
-      checked ? [...prev, rangeLabel] : prev.filter(r => r !== rangeLabel)
-    );
-  };
-
-  const handleAmenityChange = (amenity, checked) => {
-    setSelectedAmenities(prev =>
-      checked ? [...prev, amenity] : prev.filter(a => a !== amenity)
-    );
-  };
-
-  const handleRoomTypeChange = (roomType, checked) => {
-    setSelectedRoomTypes(prev =>
-      checked ? [...prev, roomType] : prev.filter(rt => rt !== roomType)
-    );
-  };
-
-  const handleBedTypeChange = (bedType, checked) => {
-    setSelectedBedTypes(prev =>
-      checked ? [...prev, bedType] : prev.filter(bt => bt !== bedType)
-    );
-  };
-
-  const handleCityChange = (city, checked) => {
-    setSelectedCities(prev =>
-      checked ? [...prev, city] : prev.filter(c => c !== city)
-    );
-  };
-
-  // Updated Loading State with Shadcn-style Spinner
   if (loading) {
     return (
-      <div className="flex h-[80vh] w-full flex-col items-center justify-center gap-2">
-        <Loader2 className="h-16 w-16 animate-spin text-primary" />
-        <p className="text-muted-foreground text-sm font-medium">Just an moment</p>
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-gray-50">
+        <Loader2 className="h-10 w-10 animate-spin text-[#5392F9]" />
+        <p className="mt-4 text-gray-500 font-medium">Loading great deals...</p>
       </div>
     );
   }
 
   return (
-    <div className='pt-28 md:pt-35 px-4 md:px-16 lg:px-24 min-h-screen pb-20'>
-      <div className='flex flex-col items-start text-left mb-8'>
-        <h1 className='font-sans font-bold text-2xl md:text-3xl text-gray-800'>
-          {searchParams.get('destination') ? `Hotels in ${searchParams.get('destination')}` : 'Recommended Properties'}
-        </h1>
-        <p className='text-sm text-gray-500'>Showing {filteredHotels.length} properties</p>
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left Sidebar Filters */}
-        <div className="w-full lg:w-1/4 bg-white p-6 rounded-lg shadow-sm h-fit">
-          <h2 className="text-lg font-semibold mb-4">Filters</h2>
-
-          {/* Price Range */}
-          <div className="mb-6">
-            <h3 className="font-medium mb-2">Price Range</h3>
-            {priceRanges.map(range => (
-              <div key={range.label} className="flex items-center space-x-2 mb-2">
-                <Checkbox
-                  id={`price-${range.label}`}
-                  checked={selectedPriceRanges.includes(range.label)}
-                  onCheckedChange={(checked) => handlePriceRangeChange(range.label, checked)}
-                />
-                <Label htmlFor={`price-${range.label}`} className="text-sm">{range.label}</Label>
-              </div>
-            ))}
+    <div className="bg-[#F8F9FA] min-h-screen">
+      {/* Search Result Summary Bar */}
+      <div className="pt-28 pb-6 bg-white border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 md:px-8">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-gray-400 mb-3">
+            <span>Home</span> <ChevronRight size={10} />
+            <span>Search Results</span> <ChevronRight size={10} />
+            <span className="text-[#5392F9] font-bold">{searchParams.get('destination') || 'All Properties'}</span>
           </div>
-
-          {/* Cities */}
-          <div className="mb-6">
-            <h3 className="font-medium mb-2">Cities</h3>
-            {uniqueCities.map(city => (
-              <div key={city} className="flex items-center space-x-2 mb-2">
-                <Checkbox
-                  id={`city-${city}`}
-                  checked={selectedCities.includes(city)}
-                  onCheckedChange={(checked) => handleCityChange(city, checked)}
-                />
-                <Label htmlFor={`city-${city}`} className="text-sm">{city}</Label>
+          
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-[#2A2A2E] flex items-center gap-2">
+                {searchParams.get('destination') ? `Hotels in ${searchParams.get('destination')}` : 'Top Recommended Properties'}
+              </h1>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="bg-[#E1F0FF] text-[#006CE4] text-xs font-bold px-2 py-0.5 rounded">
+                  {filteredHotels.length} properties found
+                </span>
               </div>
-            ))}
-          </div>
-
-          {/* Facilities */}
-          <div className="mb-6">
-            <h3 className="font-medium mb-2">Facilities</h3>
-            {uniqueAmenities.map(amenity => (
-              <div key={amenity} className="flex items-center space-x-2 mb-2">
-                <Checkbox
-                  id={`amenity-${amenity}`}
-                  checked={selectedAmenities.includes(amenity)}
-                  onCheckedChange={(checked) => handleAmenityChange(amenity, checked)}
-                />
-                <Label htmlFor={`amenity-${amenity}`} className="text-sm">{amenity}</Label>
-              </div>
-            ))}
-          </div>
-
-          {/* Room Types */}
-          <div className="mb-6">
-            <h3 className="font-medium mb-2">Room Types</h3>
-            {uniqueRoomTypes.map(roomType => (
-              <div key={roomType} className="flex items-center space-x-2 mb-2">
-                <Checkbox
-                  id={`roomtype-${roomType}`}
-                  checked={selectedRoomTypes.includes(roomType)}
-                  onCheckedChange={(checked) => handleRoomTypeChange(roomType, checked)}
-                />
-                <Label htmlFor={`roomtype-${roomType}`} className="text-sm">{roomType}</Label>
-              </div>
-            ))}
-          </div>
-
-          {/* Bed Types */}
-          <div className="mb-6">
-            <h3 className="font-medium mb-2">Bed Types</h3>
-            {uniqueBedTypes.map(bedType => (
-              <div key={bedType} className="flex items-center space-x-2 mb-2">
-                <Checkbox
-                  id={`bedtype-${bedType}`}
-                  checked={selectedBedTypes.includes(bedType)}
-                  onCheckedChange={(checked) => handleBedTypeChange(bedType, checked)}
-                />
-                <Label htmlFor={`bedtype-${bedType}`} className="text-sm">{bedType}</Label>
-              </div>
-            ))}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Right Side Hotel List */}
-        <div className="w-full lg:w-3/4">
-          <div className="flex flex-col gap-4">
-            {filteredHotels.length > 0 ? (
-              filteredHotels.map((hotel) => (
-                <HotelCardrow key={hotel._id} hotel={hotel} />
-              ))
-            ) : (
-              <div className="bg-white p-10 rounded-xl text-center shadow-sm">
-                <p className="text-gray-500 font-medium">No hotels found matching your filters.</p>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        <div className="flex flex-col lg:flex-row gap-6">
+          
+          {/* Sidebar Filters - Sticky and Styled like Agoda */}
+          <aside className="w-full lg:w-64 flex-shrink-0 max-sm:hidden">
+            <div className="sticky top-28 space-y-4">
+              <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
+                <div className="p-4 bg-gray-50 border-b flex items-center justify-between">
+                  <span className="font-bold text-sm text-gray-700 uppercase">Filter by</span>
+                  <SlidersHorizontal size={14} className="text-gray-400" />
+                </div>
+
+                <div className="divide-y divide-gray-100">
+                  <FilterGroup 
+                    title="Price Range" 
+                    options={priceRanges.map(r => r.label)}
+                    selected={selectedPriceRanges}
+                    onChange={(val, checked) => setSelectedPriceRanges(prev => checked ? [...prev, val] : prev.filter(i => i !== val))}
+                  />
+                  
+                  <FilterGroup 
+                    title="Popular Cities" 
+                    options={uniqueCities}
+                    selected={selectedCities}
+                    onChange={(val, checked) => setSelectedCities(prev => checked ? [...prev, val] : prev.filter(i => i !== val))}
+                  />
+
+                  <FilterGroup 
+                    title="Room Facilities" 
+                    options={uniqueAmenities}
+                    selected={selectedAmenities}
+                    onChange={(val, checked) => setSelectedAmenities(prev => checked ? [...prev, val] : prev.filter(i => i !== val))}
+                  />
+
+                  <FilterGroup 
+                    title="Room Type" 
+                    options={uniqueRoomTypes}
+                    selected={selectedRoomTypes}
+                    onChange={(val, checked) => setSelectedRoomTypes(prev => checked ? [...prev, val] : prev.filter(i => i !== val))}
+                  />
+
+                  <FilterGroup 
+                    title="Bed Configuration" 
+                    options={uniqueBedTypes}
+                    selected={selectedBedTypes}
+                    onChange={(val, checked) => setSelectedBedTypes(prev => checked ? [...prev, val] : prev.filter(i => i !== val))}
+                  />
+                </div>
               </div>
-            )}
-          </div>
+            </div>
+          </aside>
+
+          {/* Results Area */}
+          <main className="flex-1">
+            <div className="flex flex-col gap-4">
+              {filteredHotels.length > 0 ? (
+                filteredHotels.map((hotel) => (
+                  <HotelCardrow key={hotel._id} hotel={hotel} />
+                ))
+              ) : (
+                <div className="bg-white p-20 rounded-lg text-center border border-gray-200 shadow-sm">
+                  <div className="flex justify-center mb-4">
+                    <Search size={48} className="text-gray-200" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-700">No matching results</h3>
+                  <p className="text-gray-500 mb-6">Try adjusting your filters to find more properties.</p>
+                  <button 
+                    onClick={() => {
+                      setSelectedPriceRanges([]);
+                      setSelectedAmenities([]);
+                      setSelectedCities([]);
+                      setSelectedRoomTypes([]);
+                      setSelectedBedTypes([]);
+                    }}
+                    className="text-[#5392F9] font-bold border border-[#5392F9] px-6 py-2 rounded hover:bg-[#F0F7FF] transition-colors"
+                  >
+                    Reset all filters
+                  </button>
+                </div>
+              )}
+            </div>
+          </main>
         </div>
       </div>
     </div>
   );
 };
+
+// Sub-component for clean filter sections
+const FilterGroup = ({ title, options, selected, onChange }) => (
+  <div className="p-4">
+    <h3 className="text-[12px] font-bold text-gray-800 uppercase mb-3 tracking-tight">{title}</h3>
+    <div className="space-y-2.5">
+      {options.length > 0 ? options.map((option) => (
+        <div key={option} className="flex items-center group cursor-pointer">
+          <Checkbox
+            id={option}
+            checked={selected.includes(option)}
+            onCheckedChange={(checked) => onChange(option, checked)}
+            className="h-4 w-4 border-gray-300 rounded data-[state=checked]:bg-[#5392F9] data-[state=checked]:border-[#5392F9]"
+          />
+          <Label 
+            htmlFor={option} 
+            className="ml-2.5 text-sm text-gray-600 group-hover:text-[#5392F9] cursor-pointer font-normal leading-tight"
+          >
+            {option}
+          </Label>
+        </div>
+      )) : <span className="text-xs text-gray-400 italic">None available</span>}
+    </div>
+  </div>
+);
 
 export default AllHotels;

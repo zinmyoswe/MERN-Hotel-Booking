@@ -136,7 +136,7 @@ const HotelCardrow = ({ hotel }) => {
         {cheapestPrice !== null && !loadingRooms && (
           <div className="mb-4">
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Price starting at</p>
-            <p className="text-2xl font-black text-red-500 leading-tight">
+            <p className="text-2xl font-medium font-black text-red-500 leading-tight">
               ${cheapestPrice}
             </p>
             <p className="text-[10px] text-gray-400">per night</p>
