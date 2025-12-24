@@ -14,6 +14,7 @@ import highlightRouter from './routes/highlightRoutes.js';
 import facilityRouter from './routes/facilityRoutes.js';
 import staycationRouter from './routes/staycationRoutes.js';
 import distanceRouter from './routes/distanceRoutes.js';
+import { stripeWebhooks } from './controllers/stripeWebhooks.js';
 
 const app = express();
 const port = 3000;
@@ -21,10 +22,16 @@ const port = 3000;
 await connectDB()
 connectCloudinary();
 
+//API to listen to Stripe Webhooks
+app.post('/api/stripe', express.raw({type: 'application/json'}), stripeWebhooks)
+
+
 //Middleware
 app.use(express.json())
 app.use(cors())
 app.use(clerkMiddleware())
+
+
 
 //API to listend to Clerk Webhooks
 app.use("/api/clerk",clerkWebhooks);

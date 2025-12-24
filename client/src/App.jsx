@@ -24,6 +24,7 @@ import {Toaster} from 'react-hot-toast';
 import { useAppContext } from './context/AppContext';
 import Footer2 from './components/Footer2';
 import Footer1 from './components/Footer1';
+import { Loader } from 'lucide-react';
 
 const App = () => {
   const isOwnerPath = useLocation().pathname.startsWith('/owner');
@@ -42,6 +43,7 @@ const App = () => {
           <Route path="/hotels/:id" element={<HotelDetails />} />
           <Route path="/flights" element={<AllFlights />} />
           <Route path="/my-bookings" element={<MyBookings />} />
+          <Route path="/loader/:nextUrl" element={<Loader />} />
 
           <Route path="/owner" element={<Layout />}>
             <Route index element={<Dashboard />} />
