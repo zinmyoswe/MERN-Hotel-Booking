@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Car } from 'lucide-react';
+import './AgodaTabs.css';
+
 
 const AgodaTabs = () => {
   const [activeTab, setActiveTab] = useState('hotels');
@@ -41,8 +43,8 @@ const AgodaTabs = () => {
 
   return (
     <div id="Tabs-Container" 
-      className="flex w-full md:w-max items-center justify-center rounded-t-xl bg-white/95 backdrop-blur-sm px-4" 
-      style={{ zIndex: 20 }}>
+      className="agodatabzin flex w-full md:w-max items-center justify-center rounded-t-xl bg-white/95 backdrop-blur-sm px-4" 
+      >
       <div className="max-w-4xl mx-auto px-4">
         <ul role="tablist" className="flex items-center gap-4 md:gap-8 overflow-x-auto no-scrollbar">
           {tabs.map((tab) => (

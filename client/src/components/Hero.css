@@ -2,7 +2,7 @@
 
 .kQKjYj {
     width: 100%;
-    z-index: 996;
+    /* z-index: 996; */
 }
 
 .a5d5b-text-inherit {
@@ -33,3 +33,5 @@
 .a5d5b-box {
     -webkit-tap-highlight-color: transparent;
 }
+
+/* ------------------------------------ */

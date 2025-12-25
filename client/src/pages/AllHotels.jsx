@@ -61,12 +61,31 @@ const AllHotels = () => {
 
   // --- Filtering Logic (Original Restored) ---
   const filteredHotels = useMemo(() => {
-    const destination = searchParams.get('destination')?.toLowerCase();
+    const destination = searchParams.get('destination') 
+      ? decodeURIComponent(searchParams.get('destination')).toLowerCase().trim()
+      : null;
     const cityParam = searchParams.get('city')?.toLowerCase();
+
+    // Helper function to normalize text for comparison
+    const normalizeText = (text) => {
+      return text.toLowerCase()
+        .replace(/[^\w\s]/g, ' ') // Replace punctuation with spaces
+        .replace(/\s+/g, ' ') // Normalize multiple spaces
+        .trim();
+    };
 
     let filtered = hotels;
 
-    if (destination) filtered = filtered.filter(h => h.city.toLowerCase().includes(destination));
+    if (destination) {
+      const normalizedDestination = normalizeText(destination);
+      filtered = filtered.filter(h => {
+        const normalizedHotelName = normalizeText(h.name);
+        const normalizedHotelCity = normalizeText(h.city);
+        
+        return normalizedHotelName.includes(normalizedDestination) || 
+               normalizedHotelCity.includes(normalizedDestination);
+      });
+    }
     if (cityParam) filtered = filtered.filter(h => h.city.toLowerCase().includes(cityParam));
     if (selectedCities.length > 0) filtered = filtered.filter(h => selectedCities.includes(h.city));
 
