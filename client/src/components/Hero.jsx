@@ -10,10 +10,67 @@ const Hero = () => {
 
     const {navigate, getToken, axios, setSearchedCities} = useAppContext();
     const [destination, setDestination] = useState('');
+    const [checkIn, setCheckIn] = useState('');
+    const [checkOut, setCheckOut] = useState('');
+    
+    // Get today's date in YYYY-MM-DD format
+    const getTodayDate = () => {
+        const today = new Date();
+        return today.toISOString().split('T')[0];
+    };
+    
+    // Get the minimum checkout date (day after check-in)
+    const getMinCheckoutDate = () => {
+        if (!checkIn) return getTodayDate();
+        const checkInDate = new Date(checkIn);
+        checkInDate.setDate(checkInDate.getDate() + 1);
+        return checkInDate.toISOString().split('T')[0];
+    };
+    
+    // Handle check-in date change
+    const handleCheckInChange = (e) => {
+        const selectedDate = e.target.value;
+        setCheckIn(selectedDate);
+        
+        // Reset checkout if it's now invalid
+        if (checkOut && checkOut <= selectedDate) {
+            setCheckOut('');
+        }
+    };
+    
+    // Handle check-out date change
+    const handleCheckOutChange = (e) => {
+        const selectedDate = e.target.value;
+        // Only allow checkout if it's after check-in
+        if (checkIn && selectedDate > checkIn) {
+            setCheckOut(selectedDate);
+        } else if (!checkIn) {
+            setCheckOut(selectedDate);
+        }
+    };
     
     const onSearch = async (e) => {
         e.preventDefault();
-        navigate(`/hotels?destination=${destination}`)
+        
+        // Validate dates
+        if (!checkIn || !checkOut) {
+            alert('Please select both check-in and check-out dates');
+            return;
+        }
+        
+        if (checkOut <= checkIn) {
+            alert('Check-out date must be after check-in date');
+            return;
+        }
+        
+        const searchParams = new URLSearchParams({
+            destination,
+            checkIn,
+            checkOut
+        });
+        
+        navigate(`/hotels?${searchParams.toString()}`)
+        
         //call api to save recent searched city
         await axios.post('/api/user/store-recent-search',{recentSearchedCity: destination}, {
             headers: {
@@ -35,7 +92,7 @@ const Hero = () => {
   return (
     
     <div className='relative flex flex-col items-center px-6 md:px-16 lg:px-24 xl:px-32 text-white
-    bg-[url("/src/assets/bg-Trip-homepage.png")] bg-no-repeat bg-cover h-[400px]  pt-20 pb-20 mt-18 mb-4 md:mb-48 lg:mb-48'>
+    bg-[url("/src/assets/bg-Trip-homepage.png")] bg-no-repeat bg-cover h-[400px]  pt-20 pb-20 mt-18 mb-56 md:mb-48 lg:mb-48'>
       
       {/* Title */}
       <h1 className="text-3xl md:text-4xl font-bold mb-10 text-center drop-shadow-md">
@@ -84,7 +141,11 @@ const Hero = () => {
                 <input
                     id="checkIn"
                     type="date"
+                    value={checkIn}
+                    onChange={handleCheckInChange}
+                    min={getTodayDate()}
                     className="w-full rounded bg-gray-50 px-3 py-2 text-base outline-none focus:ring-2 focus:ring-indigo-400"
+                    required
                 />
             </div>
 
@@ -98,7 +159,11 @@ const Hero = () => {
                 <input
                     id="checkOut"
                     type="date"
+                    value={checkOut}
+                    onChange={handleCheckOutChange}
+                    min={getMinCheckoutDate()}
                     className="w-full rounded bg-gray-50 px-3 py-2 text-base outline-none focus:ring-2 focus:ring-indigo-400"
+                    required
                 />
             </div>
 

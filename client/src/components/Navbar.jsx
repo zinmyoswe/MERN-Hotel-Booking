@@ -51,7 +51,7 @@ const Navbar = () => {
                 {/* Logo */}
                 <Link to='/'>
                     <img src="https://cdn6.agoda.net/images/kite-js/logo/agoda/color-default.svg" alt="logo"
-                    className={`h-8 ${isScrolled && ""}`} />
+                    className={`h-[37px] ${isScrolled && ""}`} />
                 </Link>
 
                 {/* Desktop Nav */}

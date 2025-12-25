@@ -1,35 +1,51 @@
 import React, { useState } from 'react';
-import { Building2, Home, Plane, Camera, Car, Package } from 'lucide-react';
+import { Car } from 'lucide-react';
 
 const AgodaTabs = () => {
   const [activeTab, setActiveTab] = useState('hotels');
 
   const tabs = [
-    { id: 'hotels', label: 'Hotels', icon: <Building2 size={20} /> },
-    { id: 'homes', label: 'Homes & Apts', icon: <Home size={20} /> },
+    { 
+      id: 'hotels', 
+      label: 'Hotels', 
+      icon: "https://cdn6.agoda.net/cdn-design-system/icons/20bcd7d9.svg" 
+    },
+    { 
+      id: 'homes', 
+      label: 'Homes & Apts', 
+      icon: "https://cdn6.agoda.net/cdn-design-system/icons/283db69b.svg" 
+    },
     { 
       id: 'packages', 
       label: 'Flight + Hotel', 
-      icon: <Package size={20} />, 
+      icon: "https://cdn6.agoda.net/cdn-design-system/icons/5e4b4a43.svg", 
       badge: 'Bundle & Save' 
     },
-    { id: 'flights', label: 'Flights', icon: <Plane size={20} /> },
+    { 
+      id: 'flights', 
+      label: 'Flights', 
+      icon: "https://cdn6.agoda.net/cdn-design-system/icons/59659f8c.svg" 
+    },
     { 
       id: 'activities', 
       label: 'Activities', 
-      icon: <Camera size={20} />, 
+      icon: "https://cdn6.agoda.net/cdn-design-system/icons/affa53e7.svg", 
       badge: 'New!' 
     },
-    { id: 'transfers', label: 'Airport transfer', icon: <Car size={20} /> },
+    { 
+      id: 'transfers', 
+      label: 'Airport transfer', 
+      icon: "https://cdn6.agoda.net/cdn-design-system/icons/05a6498b.svg",
+    },
   ];
 
   return (
-  <div id="Tabs-Container" 
-    className="flex w-full md:w-max items-center justify-center rounded-t-xl bg-white/95 backdrop-blur-sm px-4" 
-    style={{ zIndex: 20 }}>
-    <div className="max-w-4xl mx-auto px-4">
-      <ul role="tablist" className="flex items-center gap-4 md:gap-8 overflow-x-auto no-scrollbar">
-        {tabs.map((tab) => (
+    <div id="Tabs-Container" 
+      className="flex w-full md:w-max items-center justify-center rounded-t-xl bg-white/95 backdrop-blur-sm px-4" 
+      style={{ zIndex: 20 }}>
+      <div className="max-w-4xl mx-auto px-4">
+        <ul role="tablist" className="flex items-center gap-4 md:gap-8 overflow-x-auto no-scrollbar">
+          {tabs.map((tab) => (
             <li
               key={tab.id}
               role="tab"
@@ -37,21 +53,34 @@ const AgodaTabs = () => {
               onClick={() => setActiveTab(tab.id)}
               className="relative flex-shrink-0 cursor-pointer pt-6 pb-4 group"
             >
-              {/* Promotional Badge (Agoda Style) */}
+              {/* Promotional Badge */}
               {tab.badge && (
                 <div className="absolute top-1 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                  <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                  <span className="bg-[#E12D2D] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
                     {tab.badge}
                   </span>
                 </div>
               )}
 
               <div className="flex items-center gap-2 px-1">
-                <span className={`transition-colors duration-200 ${
-                  activeTab === tab.id ? 'text-[#5392F9]' : 'text-gray-400 group-hover:text-gray-600'
+                {/* Icon Container */}
+                <div className={`w-7 h-7 flex items-center justify-center transition-opacity duration-200 ${
+                  activeTab === tab.id ? 'opacity-100' : 'opacity-60 group-hover:opacity-80'
                 }`}>
-                  {tab.icon}
-                </span>
+                  {tab.icon ? (
+                    <img 
+                      src={tab.icon} 
+                      alt={tab.label} 
+                      className="w-full h-full object-contain"
+                      /* Simple CSS filter to match Agoda Blue when active */
+                      style={activeTab === tab.id ? { filter: 'invert(48%) sepia(85%) saturate(1633%) hue-rotate(195deg) brightness(101%) contrast(97%)' } : {}}
+                    />
+                  ) : (
+                    <span className={activeTab === tab.id ? 'text-[#5392F9]' : 'text-gray-400'}>
+                      {tab.lucideIcon}
+                    </span>
+                  )}
+                </div>
                 
                 <h6 className={`text-sm font-bold transition-colors duration-200 whitespace-nowrap ${
                   activeTab === tab.id ? 'text-[#5392F9]' : 'text-gray-500 group-hover:text-gray-700'
