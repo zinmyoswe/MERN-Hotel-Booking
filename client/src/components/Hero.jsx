@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { assets, cities } from '../assets/assets'
-import { UsersRound } from 'lucide-react'
+import { MapPin, UsersRound } from 'lucide-react'
 import { useAppContext } from '@/context/AppContext'
 import './Hero.css'
 import AgodaTabs from './AgodaTabs'
@@ -12,6 +12,11 @@ const Hero = () => {
     const [destination, setDestination] = useState('');
     const [checkIn, setCheckIn] = useState('');
     const [checkOut, setCheckOut] = useState('');
+    const [suggestions, setSuggestions] = useState([]);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const dropdownRef = useRef(null);
+    const inputRef = useRef(null);
     
     // Get today's date in YYYY-MM-DD format
     const getTodayDate = () => {
@@ -48,6 +53,56 @@ const Hero = () => {
             setCheckOut(selectedDate);
         }
     };
+
+    // Debounced search function
+    const searchHotels = async (query) => {
+        if (!query.trim()) {
+            setSuggestions([]);
+            setShowDropdown(false);
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const response = await axios.get(`/api/hotels?search=${encodeURIComponent(query)}&limit=5`);
+            if (response.data.success) {
+                setSuggestions(response.data.hotels);
+                setShowDropdown(true);
+            }
+        } catch (error) {
+            console.error('Error searching hotels:', error);
+            setSuggestions([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Handle destination input change
+    const handleDestinationChange = (e) => {
+        const value = e.target.value;
+        setDestination(value);
+        searchHotels(value);
+    };
+
+    // Handle suggestion selection
+    const handleSuggestionSelect = (hotel) => {
+        setDestination(hotel.name);
+        setSuggestions([]);
+        setShowDropdown(false);
+    };
+
+    // Handle click outside to close dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
+                inputRef.current && !inputRef.current.contains(event.target)) {
+                setShowDropdown(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
     
     const onSearch = async (e) => {
         e.preventDefault();
@@ -109,25 +164,72 @@ const Hero = () => {
 
              
         <div className='kQKjYj'>    
-        {/* form */} 
+        {/*Search Form */} 
        <form onSubmit={onSearch}  
        className='w-full bg-white text-gray-800 rounded-xl p-3 md:p-4 flex flex-col md:flex-col max-md:items-start md:items-center gap-2 md:gap-4 max-md:mx-auto shadow-2xl'>
           
             {/* Destination Input - Styled for Prominence */}
-            <div className='w-full'>
+            <div className='w-full relative'>
                 <div className='flex items-center gap-2 mb-1'>
                     <img src={assets.calenderIcon} alt='Destination Icon' className='h-5 text-indigo-500' />
                     <label htmlFor="destinationInput" className='font-bold text-base'>Destination</label>
                 </div>
-                <input 
-                onChange={e => setDestination(e.target.value)}
-                value={destination}
-                list='destinations' id="destinationInput" type="text" className="w-full rounded bg-gray-50 px-3 py-2 text-lg outline-none focus:ring-2 focus:ring-indigo-400 transition duration-150 placeholder-gray-400" placeholder="e.g. Bangkok, Thailand" required />
-                <datalist id='destinations'>
-                    {cities.map((city, index) => (
-                        <option value={city} key={index} />
-                    ))}
-                </datalist>
+                <input
+                    ref={inputRef}
+                    onChange={handleDestinationChange}
+                    value={destination}
+                    id="destinationInput"
+                    type="text"
+                    className="w-full rounded bg-gray-50 px-3 py-2 text-lg outline-none focus:ring-2 focus:ring-indigo-400 transition duration-150 placeholder-gray-400"
+                    placeholder="e.g. Bangkok, Thailand"
+                    required
+                    autoComplete="off"
+                />
+
+                {/* Loading indicator */}
+                {isLoading && (
+                    <div className="absolute right-3 top-10 text-gray-400">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-500"></div>
+                    </div>
+                )}
+
+                {/* Dropdown suggestions */}
+                {showDropdown && suggestions.length > 0 && (
+                    <div
+                        ref={dropdownRef}
+                        className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 max-h-64 overflow-y-auto"
+                    >
+                        {suggestions.map((hotel) => (
+                            <div
+                                key={hotel._id}
+                                onClick={() => handleSuggestionSelect(hotel)}
+                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <img
+                                        src={hotel.hotelMainImage}
+                                        alt={hotel.name}
+                                        className="w-12 h-12 rounded-lg object-cover"
+                                    />
+                                    <div className="flex-1">
+                                        <div className="font-semibold text-gray-800">{hotel.name}</div>
+                                        <div className="text-sm text-gray-500 flex items-center gap-1">
+                                            <span><MapPin className=' h-4' /></span>
+                                            {hotel.city}, {hotel.country}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* No results message */}
+                {showDropdown && !isLoading && suggestions.length === 0 && destination.trim() && (
+                    <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-lg z-50 p-4 text-center text-gray-500">
+                        No hotels found for "{destination}"
+                    </div>
+                )}
             </div>
             
             {/* 🔧 FIX HERE: Grid wrapper */}

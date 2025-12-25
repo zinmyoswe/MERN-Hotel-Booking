@@ -50,10 +50,29 @@ export const registerHotel = async (req, res) => {
 
 export const getHotels = async (req, res) => {
     try {
-        const hotels = await Hotel.find().populate({
+        const { search, limit } = req.query;
+        let query = {};
+
+        if (search) {
+            // Search by hotel name or city (case insensitive)
+            query = {
+                $or: [
+                    { name: { $regex: search, $options: 'i' } },
+                    { city: { $regex: search, $options: 'i' } }
+                ]
+            };
+        }
+
+        const hotelsQuery = Hotel.find(query).populate({
             path: 'owner',
             select: 'image'
         }).sort({ createdAt: -1 });
+
+        if (limit) {
+            hotelsQuery.limit(parseInt(limit));
+        }
+
+        const hotels = await hotelsQuery;
         res.json({ success: true, hotels });
     } catch (error) {
         res.json({ success: false, message: error.message });
