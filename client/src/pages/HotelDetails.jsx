@@ -46,6 +46,42 @@ const RoomCard = ({ room, hotel, onSubmitHandler }) => {
 
     const availabilityLabel = getRoomAvailabilityLabel();
 
+    // Generate discount badge
+    const getDiscountBadge = () => {
+        if (!room.discountType) return null;
+
+        const iconUrl = room.discountType === 'price_dropped' 
+            ? 'https://cdn6.agoda.net/cdn-design-system/icons/7c9792cf.svg'
+            : room.discountType === 'mega_sale'
+            ? 'https://cdn6.agoda.net/cdn-design-system/icons/273a5e4f.svg'
+            : 'https://cdn6.agoda.net/cdn-design-system/icons/c647f414.svg';
+
+        const bgColor = room.discountType === 'price_dropped' ? 'bg-green-100' : 'bg-red-100';
+        const textColor = room.discountType === 'price_dropped' ? 'text-green-800' : 'text-red-800';
+
+        const text = room.discountType === 'price_dropped' 
+            ? `Price has dropped by ${room.discountPercentage}%`
+            : room.discountType === 'mega_sale'
+            ? 'MEGA SALE'
+            : `Price has increased`;
+
+        return (
+            <div className={`flex items-center gap-1 ${bgColor} ${textColor} text-xs px-2 py-1 rounded-md font-medium`}>
+                <img src={iconUrl} alt="" className="w-3 h-3" />
+                <span>{text}</span>
+            </div>
+        );
+    };
+
+    const discountBadge = getDiscountBadge();
+
+    // Calculate discounted price
+    const discountedPrice = room.discountType === 'price_dropped' && room.originalPrice && room.discountPercentage
+        ? room.originalPrice * (1 - room.discountPercentage / 100)
+        : room.discountType === 'mega_sale' && room.originalPrice
+        ? room.originalPrice
+        : null;
+
     return (
         <div className="border rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
             <div className="grid grid-cols-1 md:grid-cols-6 h-full">
@@ -91,7 +127,23 @@ const RoomCard = ({ room, hotel, onSubmitHandler }) => {
                 <div className="md:col-span-1 p-5 flex flex-col items-center justify-center bg-gray-50/50">
                     <div className="text-center mb-4">
                         <span className="text-[10px] text-gray-400 block uppercase font-bold">Per Night</span>
-                        <p className="text-2xl font-black text-indigo-600">${room.pricePerNight}</p>
+                        {discountedPrice ? (
+                            <div className="flex flex-col items-center">
+                                <p className="text-lg text-gray-500 line-through">
+                                    ${room.discountType === 'mega_sale' ? room.pricePerNight : room.originalPrice}
+                                </p>
+                                <p className="text-2xl font-black text-indigo-600">
+                                    ${room.discountType === 'mega_sale' ? room.originalPrice : discountedPrice.toFixed(0)}
+                                </p>
+                            </div>
+                        ) : (
+                            <p className="text-2xl font-black text-indigo-600">${room.pricePerNight}</p>
+                        )}
+                        {discountBadge && (
+                            <div className="mt-2">
+                                {discountBadge}
+                            </div>
+                        )}
                         <span className="text-[10px] text-gray-400">Taxes included</span>
                     </div>
                     <button 
@@ -387,7 +439,15 @@ const HotelDetails = () => {
                                     <span className='text-xs text-gray-500'>from</span>
                                     <div className="text-3xl font-medium font-black text-red-500">
                                         
-                                       ${Math.min(...rooms.map(room => room.pricePerNight))}
+                                       ${Math.min(...rooms.map(room => {
+                                         let effectivePrice = room.pricePerNight;
+                                         if (room.discountType === 'price_dropped' && room.discountPercentage > 0) {
+                                           effectivePrice = room.pricePerNight * (1 - room.discountPercentage / 100);
+                                         } else if (room.discountType === 'mega_sale' && room.originalPrice > 0) {
+                                           effectivePrice = room.originalPrice;
+                                         }
+                                         return effectivePrice;
+                                       }))}
                                     </div>
                                     <div className="text-sm text-gray-500">
                                         <div className="font-medium">per night</div>

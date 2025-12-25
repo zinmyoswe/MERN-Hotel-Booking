@@ -84,6 +84,7 @@ const ListRoom = () => {
               <TableHead>Hotel</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Quantity</TableHead>
+              <TableHead>Discount</TableHead>
               <TableHead>Address</TableHead>
               <TableHead>Available</TableHead>
               <TableHead>Actions</TableHead>
@@ -104,6 +105,21 @@ const ListRoom = () => {
                 <TableCell>{room.hotel.name}</TableCell>
                 <TableCell>${room.pricePerNight}</TableCell>
                 <TableCell>{room.quantity || 1}</TableCell>
+                <TableCell>
+                  {room.discountType ? (
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      room.discountType === 'price_dropped' ? 'bg-green-100 text-green-800' :
+                      room.discountType === 'mega_sale' ? 'bg-red-100 text-red-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {room.discountType === 'price_dropped' && `-${room.discountPercentage}%`}
+                      {room.discountType === 'mega_sale' && 'MEGA SALE'}
+                      {room.discountType === 'price_increased' && `+${room.discountPercentage}%`}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 text-xs">No discount</span>
+                  )}
+                </TableCell>
                 <TableCell>{room.hotel.city}, {room.hotel.country}</TableCell>
                 
                 <TableCell>

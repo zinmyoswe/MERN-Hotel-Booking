@@ -12,14 +12,15 @@ const checkAvailability = async ( checkInDate, checkOutDate, room) => {
             return false;
         }
 
+        // Check date conflicts with active bookings
         const bookings = await Booking.find({ 
             room,
+            status: { $ne: 'cancelled' }, // Only count active bookings
             checkInDate: { $lt: new Date(checkOutDate) },
             checkOutDate: { $gt: new Date(checkInDate) }
-            
         });
-        const isAvailable = bookings.length === 0;
-        return isAvailable;
+
+        return bookings.length === 0;
     } catch (error) {
         console.error(error.message);
         return false;
@@ -58,7 +59,16 @@ export const createBooking = async (req, res) => {
 
         //GET total price from Room
         const roomData = await Room.findById(room).populate('hotel');
-        let totalPrice = roomData.pricePerNight;
+        
+        // Calculate price per night (use discounted price if available)
+        let pricePerNight = roomData.pricePerNight;
+        if (roomData.discountType === 'price_dropped' && roomData.originalPrice && roomData.discountPercentage) {
+            pricePerNight = roomData.originalPrice * (1 - roomData.discountPercentage / 100);
+        } else if (roomData.discountType === 'mega_sale' && roomData.originalPrice) {
+            pricePerNight = roomData.originalPrice; // For MEGA SALE, originalPrice is the sale price
+        }
+        
+        let totalPrice = pricePerNight;
 
         //Calculate totalPrice based on nights
         const checkIn = new Date(checkInDate);
@@ -66,6 +76,7 @@ export const createBooking = async (req, res) => {
         const timeDiff = checkOut.getTime() - checkIn.getTime();
         const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
         totalPrice *= nights;
+        
         const booking = await Booking.create({
             user,
             room,
@@ -104,6 +115,7 @@ export const createBooking = async (req, res) => {
     }
 }
 
+//API to cancel a booking
 //API to get all bookings for a user
 // GET /api/bookings/user
 

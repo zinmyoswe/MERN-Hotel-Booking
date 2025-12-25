@@ -24,8 +24,16 @@ const HotelCard = ({ hotel, room, index }) => {
     fetchRooms();
   }, [hotel._id]);
 
-  // Calculate the cheapest room price
-  const cheapestPrice = rooms.length > 0 ? Math.min(...rooms.map(room => room.pricePerNight)) : null;
+  // Calculate the cheapest room price considering discounts
+  const cheapestPrice = rooms.length > 0 ? Math.min(...rooms.map(room => {
+    let effectivePrice = room.pricePerNight;
+    if (room.discountType === 'price_dropped' && room.discountPercentage > 0) {
+      effectivePrice = room.pricePerNight * (1 - room.discountPercentage / 100);
+    } else if (room.discountType === 'mega_sale' && room.originalPrice > 0) {
+      effectivePrice = room.originalPrice;
+    }
+    return effectivePrice;
+  })) : null;
 
   return (
     <Link to={`/hotels/${hotel._id}`} onClick={() => scrollTo(0, 0)} key={hotel._id}

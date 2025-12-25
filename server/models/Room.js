@@ -12,9 +12,11 @@ const roomSchema = mongoose.Schema({
     Adults: { type: String, required: true },
     Bed: { type: String, required: true },
     SquareFeet: { type: String, required: true },
+    discountType: { type: String, enum: ['price_dropped', 'mega_sale', 'price_increased'], default: null },
+    discountPercentage: { type: Number, default: null },
+    originalPrice: { type: Number, default: null },
 },{ timestamps: true });
 
 const Room = mongoose.model("Room", roomSchema);
 
 export default Room;
-

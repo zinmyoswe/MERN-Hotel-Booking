@@ -56,6 +56,9 @@ const EditRoom = () => {
     Adults: '',
     Bed: '',
     SquareFeet: '',
+    discountType: '',
+    discountPercentage: '',
+    originalPrice: '',
     amenities: {
       'Free Wi-Fi': false,
       'Free Breakfast': false,
@@ -130,6 +133,9 @@ const EditRoom = () => {
             Adults: room.Adults,
             Bed: room.Bed,
             SquareFeet: room.SquareFeet,
+            discountType: room.discountType || '',
+            discountPercentage: room.discountPercentage ? room.discountPercentage.toString() : '',
+            originalPrice: room.originalPrice ? room.originalPrice.toString() : '',
             amenities: {
               'Free Wi-Fi': room.amenities.includes('Free Wi-Fi'),
               'Free Breakfast': room.amenities.includes('Free Breakfast'),
@@ -158,6 +164,19 @@ const EditRoom = () => {
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    
+    // Validate discount fields
+    if (inputs.discountType) {
+      if ((inputs.discountType === 'price_dropped' || inputs.discountType === 'price_increased') && !inputs.discountPercentage) {
+        toast.error('Please enter discount percentage for price changes');
+        return;
+      }
+      if (!inputs.originalPrice) {
+        toast.error('Please enter original price for discount calculation');
+        return;
+      }
+    }
+    
     if (
       !selectedHotel ||
       !inputs.roomType ||
@@ -184,6 +203,11 @@ const EditRoom = () => {
       formData.append('Adults', inputs.Adults);
       formData.append('Bed', inputs.Bed);
       formData.append('SquareFeet', inputs.SquareFeet);
+      if (inputs.discountType) {
+        formData.append('discountType', inputs.discountType);
+        formData.append('discountPercentage', inputs.discountPercentage);
+        formData.append('originalPrice', inputs.originalPrice);
+      }
 
       const amenities = Object.keys(inputs.amenities).filter(
         (key) => inputs.amenities[key]
@@ -285,6 +309,49 @@ const EditRoom = () => {
                 onChange={onInputChangeHandler}
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="discountType">Discount Type (Optional)</Label>
+              <Select onValueChange={(value) => onSelectChangeHandler('discountType', value)} value={inputs.discountType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select discount type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="price_dropped">Price has dropped</SelectItem>
+                  <SelectItem value="mega_sale">MEGA SALE</SelectItem>
+                  <SelectItem value="price_increased">Price has increased</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {(inputs.discountType === 'price_dropped' || inputs.discountType === 'price_increased') && (
+              <div className="space-y-2">
+                <Label htmlFor="discountPercentage">Discount Percentage (%)</Label>
+                <Input
+                  id="discountPercentage"
+                  name="discountPercentage"
+                  type="number"
+                  min="1"
+                  max="99"
+                  placeholder="e.g. 20"
+                  value={inputs.discountPercentage}
+                  onChange={onInputChangeHandler}
+                />
+              </div>
+            )}
+            {inputs.discountType && (
+              <div className="space-y-2">
+                <Label htmlFor="originalPrice">Original Price ($)</Label>
+                <Input
+                  id="originalPrice"
+                  name="originalPrice"
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 150"
+                  value={inputs.originalPrice}
+                  onChange={onInputChangeHandler}
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="RoomView">Room View</Label>

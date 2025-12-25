@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { assets } from '../assets/assets.js';
 import './HotelCardrow.css'
@@ -53,8 +53,79 @@ const HotelCardrow = ({ hotel }) => {
     fetchAvailableRoomsCount();
   }, [hotel._id]);
 
-  // Calculate the cheapest room price
-  const cheapestPrice = rooms.length > 0 ? Math.min(...rooms.map(room => room.pricePerNight)) : null;
+  // Calculate the cheapest room price and discount info
+  const { cheapestPrice, discountInfo, discountedPrice } = useMemo(() => {
+    if (rooms.length === 0) return { cheapestPrice: null, discountInfo: null, discountedPrice: null };
+
+    let cheapest = rooms[0];
+    let cheapestEffectivePrice = cheapest.discountType === 'price_dropped' && cheapest.originalPrice && cheapest.discountPercentage
+        ? cheapest.originalPrice * (1 - cheapest.discountPercentage / 100)
+        : cheapest.discountType === 'mega_sale' && cheapest.originalPrice
+        ? cheapest.originalPrice
+        : cheapest.pricePerNight;
+
+    rooms.forEach(room => {
+      const effectivePrice = room.discountType === 'price_dropped' && room.originalPrice && room.discountPercentage
+          ? room.originalPrice * (1 - room.discountPercentage / 100)
+          : room.discountType === 'mega_sale' && room.originalPrice
+          ? room.originalPrice
+          : room.pricePerNight;
+      
+      if (effectivePrice < cheapestEffectivePrice) {
+        cheapest = room;
+        cheapestEffectivePrice = effectivePrice;
+      }
+    });
+
+    let discountedPrice = null;
+    let originalPrice = null;
+    if (cheapest.discountType === 'price_dropped' && cheapest.originalPrice && cheapest.discountPercentage) {
+      discountedPrice = cheapest.originalPrice * (1 - cheapest.discountPercentage / 100);
+      originalPrice = cheapest.originalPrice;
+    } else if (cheapest.discountType === 'mega_sale' && cheapest.originalPrice) {
+      discountedPrice = cheapest.originalPrice;
+      originalPrice = cheapest.pricePerNight;
+    }
+
+    return {
+      cheapestPrice: cheapest.pricePerNight,
+      discountedPrice,
+      discountInfo: cheapest.discountType ? {
+        type: cheapest.discountType,
+        percentage: cheapest.discountPercentage,
+        originalPrice: originalPrice || cheapest.originalPrice
+      } : null
+    };
+  }, [rooms]);
+
+  // Generate discount badge
+  const getDiscountBadge = () => {
+    if (!discountInfo) return null;
+
+    const iconUrl = discountInfo.type === 'price_dropped' 
+        ? 'https://cdn6.agoda.net/cdn-design-system/icons/7c9792cf.svg'
+        : discountInfo.type === 'mega_sale'
+        ? 'https://cdn6.agoda.net/cdn-design-system/icons/273a5e4f.svg'
+        : 'https://cdn6.agoda.net/cdn-design-system/icons/c647f414.svg';
+        
+    const bgColor = discountInfo.type === 'price_dropped' ? 'bg-green-100' : 'bg-red-100';
+    const textColor = discountInfo.type === 'price_dropped' ? 'text-green-800' : 'text-red-800';
+
+    const text = discountInfo.type === 'price_dropped' 
+        ? `Price has dropped by ${discountInfo.percentage}%`
+        : discountInfo.type === 'mega_sale'
+        ? 'MEGA SALE'
+        : `Price has increased`;
+
+    return (
+        <div className={`flex items-center gap-1 ${bgColor} ${textColor} text-xs px-2 py-1 rounded-md font-medium mt-1`}>
+            <img src={iconUrl} alt="" className="w-3 h-3" />
+            <span>{text}</span>
+        </div>
+    );
+  };
+
+  const discountBadge = getDiscountBadge();
 
   // Generate room availability label
   const getRoomAvailabilityLabel = () => {
@@ -174,9 +245,21 @@ const HotelCardrow = ({ hotel }) => {
         {cheapestPrice !== null && !loadingRooms && (
           <div className="mb-4">
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Price starting at</p>
-            <p className="text-2xl font-medium font-black text-red-500 leading-tight">
-              ${cheapestPrice}
-            </p>
+            {discountedPrice ? (
+              <div className="flex flex-col items-end">
+                <p className="text-lg text-gray-500 line-through">
+                  ${discountInfo.type === 'mega_sale' ? cheapestPrice : discountInfo.originalPrice}
+                </p>
+                <p className="text-2xl font-medium font-black text-red-500 leading-tight">
+                  ${discountInfo.type === 'mega_sale' ? discountedPrice : discountedPrice.toFixed(0)}
+                </p>
+              </div>
+            ) : (
+              <p className="text-2xl font-medium font-black text-red-500 leading-tight">
+                ${cheapestPrice}
+              </p>
+            )}
+            {discountBadge}
             <p className="text-[10px] text-gray-400">per night</p>
           </div>
         )}

@@ -76,7 +76,16 @@ const AllHotels = () => {
       if (selectedPriceRanges.length > 0) {
         const hasMatch = hotelRooms.some(room => selectedPriceRanges.some(label => {
           const range = priceRanges.find(r => r.label === label);
-          return range && room.pricePerNight >= range.min && room.pricePerNight <= range.max;
+          
+          // Calculate effective price (discounted price if applicable)
+          let effectivePrice = room.pricePerNight;
+          if (room.discountType === 'price_dropped' && room.originalPrice && room.discountPercentage) {
+            effectivePrice = room.originalPrice * (1 - room.discountPercentage / 100);
+          } else if (room.discountType === 'mega_sale' && room.originalPrice) {
+            effectivePrice = room.originalPrice;
+          }
+          
+          return range && effectivePrice >= range.min && effectivePrice <= range.max;
         }));
         if (!hasMatch) return false;
       }

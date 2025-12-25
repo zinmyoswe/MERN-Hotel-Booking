@@ -7,7 +7,7 @@ import { populate } from "dotenv";
 //API to create a new room for a hotel
 export const createRoom = async (req, res) => {
     try {
-        const { hotel: hotelId, roomType, pricePerNight, quantity, amenities, isAvailable, RoomView, Adults, Bed, SquareFeet } = req.body;
+        const { hotel: hotelId, roomType, pricePerNight, quantity, amenities, isAvailable, RoomView, Adults, Bed, SquareFeet, discountType, discountPercentage, originalPrice } = req.body;
 
         // Verify that the hotel exists and belongs to the authenticated user
         const hotel = await Hotel.findOne({ _id: hotelId, owner: req.auth.userId });
@@ -35,7 +35,10 @@ export const createRoom = async (req, res) => {
             RoomView,
             Adults,
             Bed,
-            SquareFeet
+            SquareFeet,
+            discountType,
+            discountPercentage: discountPercentage ? +discountPercentage : null,
+            originalPrice: originalPrice ? +originalPrice : null
         });
         res.json({ success: true, message: "Room created successfully" });
     } catch (error) {
@@ -125,7 +128,7 @@ export const getHotelAvailableRoomsCount = async (req, res) => {
 export const updateRoom = async (req, res) => {
     try {
         const { id } = req.params;
-        const { hotel: hotelId, roomType, pricePerNight, quantity, amenities, isAvailable, RoomView, Adults, Bed, SquareFeet } = req.body;
+        const { hotel: hotelId, roomType, pricePerNight, quantity, amenities, isAvailable, RoomView, Adults, Bed, SquareFeet, discountType, discountPercentage, originalPrice } = req.body;
 
         // Find the room and verify ownership
         const room = await Room.findById(id).populate('hotel');
@@ -162,7 +165,10 @@ export const updateRoom = async (req, res) => {
             RoomView,
             Adults,
             Bed,
-            SquareFeet
+            SquareFeet,
+            discountType,
+            discountPercentage: discountPercentage ? +discountPercentage : null,
+            originalPrice: originalPrice ? +originalPrice : null
         }, { new: true });
 
         res.json({ success: true, message: "Room updated successfully", room: updatedRoom });
