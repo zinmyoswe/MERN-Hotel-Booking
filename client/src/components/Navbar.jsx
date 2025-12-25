@@ -2,22 +2,22 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom';
 import {assets} from '../assets/assets.js';
-import { BookCheck, LogIn, Search } from 'lucide-react';
+import { BookCheck, ChevronDown, LogIn, Search } from 'lucide-react';
 import { useClerk,UserButton  } from "@clerk/clerk-react";
 import { useAppContext } from '@/context/AppContext.jsx';
 
 const Navbar = () => {
     const navLinks = [
         { name: 'Home', path: '/' },
-        { name: 'Hotels', path: '/hotels' },
+        { name: 'Hotels & Homes', path: '/hotels' },
         // { name: 'Flights', path: '/flights' },
-        { name: 'About', path: '/' },
     ];
 
     
 
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [showTransport, setShowTransport] = useState(false);
 
     const {openSignIn} = useClerk()
     const {openSignUp} = useClerk()
@@ -48,20 +48,66 @@ const Navbar = () => {
          
             <nav className={`fixed top-0 left-0 bg-white w-full flex items-center justify-between px-4 md:px-16 lg:px-24 xl:px-24 transition-all duration-500 z-50 ${isScrolled ? "bg-white/80 shadow-md text-gray-700 backdrop-blur-lg py-3 md:py-2" : "py-3 md:py-2"}`}>
 
-                {/* Logo */}
-                <Link to='/'>
-                    <img src="https://cdn6.agoda.net/images/kite-js/logo/agoda/color-default.svg" alt="logo"
-                    className={`h-[37px] ${isScrolled && ""}`} />
-                </Link>
+                
 
                 {/* Desktop Nav */}
                 <div className="hidden md:flex items-center gap-4 lg:gap-8">
+                    {/* Logo */}
+                <Link to='/'>
+                    <img src="https://cdn6.agoda.net/images/kite-js/logo/agoda/color-default.svg" alt="logo"
+                    className={`h-[37px] mr-16 ${isScrolled && ""}`} />
+                </Link>
+
                     {navLinks.map((link, i) => (
-                        <a key={i} href={link.path} className={`group flex flex-col gap-0.5 ${isScrolled ? "text-gray-800" : "text-black"}`}>
+                        <a key={i} href={link.path} className={`group flex flex-col text-[17px] gap-0.5 ${isScrolled ? "text-gray-800" : "text-black"}`}>
                             {link.name}
                             <div className={`${isScrolled ? "bg-white" : "bg-black"} h-0.5 w-0 group-hover:w-full transition-all duration-300`} />
                         </a>
                     ))}
+
+{/* 🔽 Transport Dropdown */}
+<div className="relative group">
+    <button
+        className={`flex items-center mb-1 gap-1 cursor-pointer ${
+            isScrolled ? "text-gray-800" : "text-black"
+        }`}
+    >
+        Transport
+        <span className="text-xs transition-transform group-hover:rotate-180">
+            <ChevronDown />
+        </span>
+    </button>
+
+    {/* Dropdown */}
+    <div
+        className="absolute top-full left-0 pt-3 opacity-0 invisible 
+                   group-hover:opacity-100 group-hover:visible
+                   transition-all duration-200 z-[1000]"
+    >
+        <div className="w-56 bg-white shadow-lg rounded-lg border overflow-hidden">
+            <a href="/flights" className="block px-4 py-2 hover:bg-gray-100">
+                Flights
+            </a>
+            <a href="https://agoda.12go.asia/en?utm_source=desktop&utm_medium=-999&utm_campaign=header_transp_buses_link" className="block px-4 py-2 hover:bg-gray-100">
+                Buses
+            </a>
+            <a href="http://agoda.12go.asia/en?utm_source=desktop&utm_medium=-999&utm_campaign=header_transp_trains_link" className="block px-4 py-2 hover:bg-gray-100">
+                Trains
+            </a>
+            <a href="https://agoda.12go.asia/en?utm_source=desktop&utm_medium=-999&utm_campaign=header_transp_ferries_link" className="block px-4 py-2 hover:bg-gray-100">
+                Ferries
+            </a>
+            <a href="https://agoda.mozio.com/en-us?pickup_datetime=01%2F01%2F2026%2012%3A00%20AM&mode=one_way&num_passengers=1&currency=THB&ref=agoda&utm_campaign=desktop_header_transp_taxi_link" className="block px-4 py-2 hover:bg-gray-100">
+                Airport transfer
+            </a>
+            <a href="https://www.booking.com/cars/index.html?integrationType=deeplink&preflang=us&prefcurrency=THB&selected_currency=THB&aid=2431168&label=desktop-header_transp_cars_link%2Cutm_source%3Ddesktop%2Cutm_medium%3D-999%2Cutm_campaign%3Dheader_transp_cars_link" className="block px-4 py-2 hover:bg-gray-100">
+                Car rentals
+            </a>
+        </div>
+    </div>
+</div>
+
+
 
                     {user && (
                         <button 
@@ -78,6 +124,7 @@ const Navbar = () => {
 
                 {/* Desktop Right */}
 <div className="hidden md:flex items-center gap-4">
+    <img src='https://cdn6.agoda.net/images/mobile/flag-us@2x.png' alt=''  className='w-8 mx-6'/>
     { !user ? (
         <>
             {/* Sign In Button */}

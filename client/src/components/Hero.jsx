@@ -95,7 +95,7 @@ const Hero = () => {
     bg-[url("/src/assets/bg-Trip-homepage.png")] bg-no-repeat bg-cover h-[400px]  pt-20 pb-20 mt-18 mb-56 md:mb-48 lg:mb-48'>
       
       {/* Title */}
-      <h1 className="text-3xl md:text-4xl font-bold mb-10 text-center drop-shadow-md">
+      <h1 className="text-3xl md:text-3xl mt-[-28px] font-bold mb-10 text-center drop-shadow-md">
         SEE THE WORLD FOR LESS
       </h1>
 
