@@ -85,7 +85,7 @@ This is a full-stack hotel booking application built with the MERN stack (MongoD
 
 ### Backend (`server/.env`)
 
-```
+```env
 # MongoDB Connection URI
 MONGODB_URI=your_mongodb_connection_string
 
@@ -116,7 +116,7 @@ CURRENCY=$
 
 ### Frontend (`client/.env.local`)
 
-```
+```env
 # URL of your backend server
 VITE_BACKEND_URL=http://localhost:5000
 
