@@ -3,6 +3,8 @@
 
 This is a full-stack hotel booking application built with the MERN stack (MongoDB, Express, React, Node.js). It provides a platform for users to search for and book hotels, and for hotel owners to manage their properties.
 
+<img width="1366" height="768" alt="agodaclone" src="https://github.com/user-attachments/assets/874239c2-3cbf-4a4d-8bf0-682513b82f77" />
+
 **Live Demo:**
 - **Frontend:** [https://mern-hotel-booking-trip.vercel.app/](https://mern-hotel-booking-trip.vercel.app/)
 - **Backend:** [https://mern-hotel-booking-backend-pink.vercel.app/](https://mern-hotel-booking-backend-pink.vercel.app/)
